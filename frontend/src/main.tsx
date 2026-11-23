@@ -1,16 +1,42 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
+import type { PublicKey } from '@solana/web3.js';
 import { createRoot } from 'react-dom/client';
-import { actionInstruction, explorer, formatSol, getWallet, program, publish, readOrder, send, states } from './chain';
+import { actionInstruction, explorer, formatSol, getWallet, parseSol, program, publish, readOrder, send, states } from './chain';
 import type { Action, Order } from './chain';
 import './style.css';
 
 const demo = 'GfBqavM1TDMh19ZfQnqHCTJjXjTd2wCjJFwybUPiAT8M';
 const actions: Record<Action, string> = {
-  pagar: 'Pagar orden', cancelar: 'Cancelar orden', enviar: 'Marcar como enviada',
+  pagar: 'Pagar con Solflare', cancelar: 'Cancelar orden', enviar: 'Marcar como enviada',
   recibir: 'Confirmar recepción', aceptar: 'Aceptar y liberar pago',
   devolver: 'Solicitar devolución', reembolsar: 'Confirmar devolución y reembolsar',
 };
+
+function Checkout({ precio, envio }: { precio: bigint; envio: bigint }) {
+  return <div className="checkout">
+    <div className="demo-card" aria-hidden="true">✦</div>
+    <div>
+      <small>Carta de demostración</small>
+      <h3>Guardián Aurora</h3>
+      <dl>
+        <dt>Precio</dt><dd>{formatSol(precio)}</dd>
+        <dt>Envío</dt><dd>{formatSol(envio)}</dd>
+        <dt>Total</dt><dd><strong>{formatSol(precio + envio)}</strong></dd>
+      </dl>
+    </div>
+  </div>;
+}
+
+function previewAmounts(price: string, shipping: string) {
+  try {
+    const precio = parseSol(price);
+    const envio = parseSol(shipping);
+    if (precio > 0n && precio + envio <= (1n << 64n) - 1n) return { precio, envio };
+  } catch {
+    // The preview is hidden until both amounts are valid.
+  }
+}
 
 function App() {
   const [query, setQuery] = useState(new URLSearchParams(location.search).get('orden') || '');
@@ -25,12 +51,15 @@ function App() {
 
   useEffect(() => {
     const wallet = getWallet();
-    const update = () => setActor(wallet?.publicKey?.toBase58() || '');
+    const update = (key?: PublicKey | null) => {
+      setActor((key === undefined ? wallet?.publicKey : key)?.toBase58() ?? '');
+    };
+    const disconnect = () => setActor('');
     wallet?.on?.('accountChanged', update);
-    wallet?.on?.('disconnect', update);
+    wallet?.on?.('disconnect', disconnect);
     return () => {
       wallet?.off?.('accountChanged', update);
-      wallet?.off?.('disconnect', update);
+      wallet?.off?.('disconnect', disconnect);
     };
   }, []);
 
@@ -57,6 +86,24 @@ function App() {
   useEffect(() => {
     if (query) void run(() => load(query));
   }, []);
+
+  async function connectWallet() {
+    const wallet = getWallet();
+    if (!wallet) throw new Error('Abre esta página en un navegador con la extensión Solflare.');
+    const result = await wallet.connect();
+    const key = wallet.publicKey ?? result?.publicKey;
+    if (!key) throw new Error('Solflare no devolvió una dirección. Desbloquea la extensión e intenta conectar de nuevo.');
+    setActor(key.toBase58());
+  }
+
+  function copyOrder(key: string, shareLink: boolean) {
+    void run(async () => {
+      const url = new URL(location.href);
+      url.searchParams.set('orden', key);
+      await navigator.clipboard.writeText(shareLink ? url.href : key);
+      setMessage(shareLink ? 'Enlace de pago copiado.' : 'Dirección copiada.');
+    });
+  }
 
   function walletRequired() {
     const wallet = getWallet();
@@ -101,15 +148,12 @@ function App() {
     if (estado === 5 && actor === vendedor) available.push('reembolsar');
   }
 
+  const preview = previewAmounts(price, shipping);
+
   return <main>
     <header>
       <div><small>Solana Devnet</small><h1>Card Escrow</h1></div>
-      <button disabled={busy} onClick={() => void run(async () => {
-        const wallet = getWallet();
-        if (!wallet) throw new Error('Abre esta página en un navegador con la extensión Solflare.');
-        const result = await wallet.connect();
-        setActor(result.publicKey.toBase58());
-      })}>{actor ? actor.slice(0, 5) + '…' + actor.slice(-4) : 'Conectar Solflare'}</button>
+      <button disabled={busy} onClick={() => void run(connectWallet)}>{actor ? actor.slice(0, 5) + '…' + actor.slice(-4) : 'Conectar Solflare'}</button>
     </header>
     <section>
       <h2>Consultar orden</h2>
@@ -122,16 +166,18 @@ function App() {
         </div>
       </form>
       {order && <>
+        <Checkout precio={order.data.precio} envio={order.data.envio} />
         <dl>
           <dt>Estado</dt><dd className="status">{states[order.data.estado]}</dd>
-          <dt>Precio</dt><dd>{formatSol(order.data.precio)}</dd>
-          <dt>Envío</dt><dd>{formatSol(order.data.envio)}</dd>
-          <dt>Total</dt><dd>{formatSol(order.data.total)}</dd>
           <dt>Vendedor</dt><dd>{order.data.vendedor}</dd>
           {order.data.estado !== 0 && <><dt>Comprador</dt><dd>{order.data.comprador}</dd></>}
         </dl>
         <div className="actions">
           <a href={explorer('address', order.key)} target="_blank" rel="noreferrer">Ver orden en Explorer</a>
+          <button disabled={busy} onClick={() => copyOrder(order.key, true)}>Copiar enlace de pago</button>
+          <button disabled={busy} onClick={() => copyOrder(order.key, false)}>Copiar dirección</button>
+          {order.data.estado === 0 && !actor &&
+            <button disabled={busy} onClick={() => void run(connectWallet)}>Conectar Solflare para pagar</button>}
           {available.map(action => <button disabled={busy} key={action} onClick={() => perform(action)}>{actions[action]}</button>)}
         </div>
       </>}
@@ -143,7 +189,8 @@ function App() {
           <div><label htmlFor="price">Precio en SOL</label><input id="price" inputMode="decimal" value={price} onChange={e => setPrice(e.target.value)} required /></div>
           <div><label htmlFor="shipping">Envío en SOL</label><input id="shipping" inputMode="decimal" value={shipping} onChange={e => setShipping(e.target.value)} required /></div>
         </div>
-        <div className="actions"><button disabled={busy || !actor}>Publicar orden</button></div>
+        {preview && <Checkout {...preview} />}
+        <div className="actions"><button disabled={busy || !actor || !preview}>Publicar orden</button></div>
       </form>
     </section>
     <p role="status">{busy ? 'Procesando solicitud…' : message}</p>
