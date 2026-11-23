@@ -46,3 +46,27 @@ a { color: #a9dcff; }
 .actions { margin: .9rem 0; }
 .error { color: #ffb8b1; }
 .status { color: #b7f4d5; font-weight: 700; }
+
+.checkout {
+  display: grid;
+  grid-template-columns: clamp(4.5rem, 18vw, 7rem) minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #435772;
+  border-radius: .75rem;
+  background: #101722;
+}
+.checkout h3 { margin: .25rem 0; }
+.checkout dl { margin-bottom: 0; }
+.demo-card {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 5 / 7;
+  border: 3px solid #97ead1;
+  border-radius: .6rem;
+  background: radial-gradient(ellipse at 40% 35%, #4e75a9, #243355 50%, #111b36);
+  color: #b7f4d5;
+  font-size: clamp(1.6rem, 7vw, 3.5rem);
+}
