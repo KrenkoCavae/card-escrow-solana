@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
+import type { PublicKey } from '@solana/web3.js';
 import { createRoot } from 'react-dom/client';
 import { actionInstruction, explorer, formatSol, getWallet, parseSol, program, publish, readOrder, send, states } from './chain';
 import type { Action, Order } from './chain';
@@ -50,12 +51,15 @@ function App() {
 
   useEffect(() => {
     const wallet = getWallet();
-    const update = () => setActor(wallet?.publicKey?.toBase58() || '');
+    const update = (key?: PublicKey | null) => {
+      setActor((key === undefined ? wallet?.publicKey : key)?.toBase58() ?? '');
+    };
+    const disconnect = () => setActor('');
     wallet?.on?.('accountChanged', update);
-    wallet?.on?.('disconnect', update);
+    wallet?.on?.('disconnect', disconnect);
     return () => {
       wallet?.off?.('accountChanged', update);
-      wallet?.off?.('disconnect', update);
+      wallet?.off?.('disconnect', disconnect);
     };
   }, []);
 
@@ -87,7 +91,9 @@ function App() {
     const wallet = getWallet();
     if (!wallet) throw new Error('Abre esta página en un navegador con la extensión Solflare.');
     const result = await wallet.connect();
-    setActor(result.publicKey.toBase58());
+    const key = wallet.publicKey ?? result?.publicKey;
+    if (!key) throw new Error('Solflare no devolvió una dirección. Desbloquea la extensión e intenta conectar de nuevo.');
+    setActor(key.toBase58());
   }
 
   function copyOrder(key: string, shareLink: boolean) {
