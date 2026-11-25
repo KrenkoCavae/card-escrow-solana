@@ -13,7 +13,7 @@ El programa está escrito en Rust con Anchor. El frontend usa React, TypeScript 
 - Node.js 24 y npm para ejecutar el frontend.
 - Solflare para firmar. Usa cuentas distintas para vendedor y comprador, ambas con SOL de Devnet. La consulta pública abre sin conectar una wallet.
 
-## Ejecución
+## Ejecución desde Codespaces
 
 Desde la raíz del repositorio:
 
@@ -36,6 +36,10 @@ Abre `http://localhost:5173`. En GitHub Codespaces, usa este comando en lugar de
 __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS="${CODESPACE_NAME}-5173.app.github.dev" \
 npm exec -- vite preview --host 0.0.0.0 --port 5173 --strictPort
 ```
+
+## Acceso por hosting (Vercel)
+
+Ingresar a https://card-escrow-solana-krenkocavae.vercel.app/ 
 
 ## Aporte propio y cómo probarlo
 
@@ -61,4 +65,4 @@ El flujo de recepción también se comprueba intentando aceptar una orden pagada
 | Aceptar después de la recepción | La orden quedó completada, el vendedor recibió 12,000,000 lamports y se cerró la bóveda. [Aceptación y liquidación](https://explorer.solana.com/tx/5x5KubBGtwB33FX7qDb6YDRMQqjs6CyVqCvFLmYL3RnoH59e18nDcEuxL1WHpWrJywTYYDqu4iEKPy8aPDbsx4jX?cluster=devnet) |
 | Solicitar y confirmar devolución | La orden quedó reembolsada, la bóveda se cerró y el comprador recibió 12,853,440 lamports, incluido el depósito de la bóveda. [Solicitud](https://explorer.solana.com/tx/387EAyZwzoqQ9imwAxTMQPwcJeaatsq2LyZsKMRV5pafUUc5Wk5KgTHxkZggC4HU3Z4h9KYXcdhiNvTkTn4cmBsc?cluster=devnet) · [Reembolso](https://explorer.solana.com/tx/5yYz24B5aaEz3HWbJrBfirJgCJnbN17FbqQK3T1J1FnU8bEAvZYDcDnut7Crvf8quaERMkvrqd3EpYUcXcoGkaUe?cluster=devnet) |
 
-La publicación y el pago del checkout se probaron en Codespaces con Solflare. Las demás pruebas del programa se realizaron en Playground durante el desarrollo, en varias actualizaciones del mismo Program ID. Los rechazos se comprobaron con el mensaje del programa y una lectura posterior de las cuentas.
+La publicación y el pago del checkout se probaron en Codespaces con Solflare. Las demás pruebas del programa se realizaron en Playground durante el desarrollo, en varias actualizaciones del mismo Program ID. Los rechazos se comprobaron con el mensaje del programa y una lectura posterior de las cuentas. Se hizo el deployment en Vercel para una mejor experiencia de manejo y ejecución.
