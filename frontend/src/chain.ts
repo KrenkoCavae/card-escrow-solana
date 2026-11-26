@@ -127,7 +127,7 @@ export async function send(wallet: Wallet, actor: string, ix: Instruction, onSen
 export async function listarOfertas(): Promise<{ key: string; data: Order }[]> {
   const accounts = await rpc.getProgramAccounts(program, {
     filters: [
-      { dataSize: 8 + 100 }, // discriminador + datos de Orden
+      { dataSize: 8 + 100 },
     ],
   });
 
@@ -138,14 +138,40 @@ export async function listarOfertas(): Promise<{ key: string; data: Order }[]> {
     try {
       if (!account.owner.equals(program)) continue;
       const data = decoder.decode(account.data);
-      // Solo órdenes pendientes (estado 0)
       if (data.estado === 0) {
         ofertas.push({ key: pubkey.toBase58(), data });
       }
     } catch {
-      // Ignorar cuentas que no se puedan decodificar
+      // ignorar
     }
   }
 
   return ofertas;
+}
+
+/** Lista las órdenes donde la wallet es vendedor o comprador. */
+export async function listarMisOrdenes(wallet: string): Promise<{ key: string; data: Order; rol: 'vendedor' | 'comprador' }[]> {
+  const accounts = await rpc.getProgramAccounts(program, {
+    filters: [{ dataSize: 8 + 100 }],
+  });
+
+  const decoder = getOrdenDecoder();
+  const mis: { key: string; data: Order; rol: 'vendedor' | 'comprador' }[] = [];
+  const w = new PublicKey(wallet);
+
+  for (const { pubkey, account } of accounts) {
+    try {
+      if (!account.owner.equals(program)) continue;
+      const data = decoder.decode(account.data);
+      if (data.vendedor === wallet || data.vendedor === w.toBase58()) {
+        mis.push({ key: pubkey.toBase58(), data, rol: 'vendedor' });
+      } else if (data.comprador && (data.comprador === wallet || data.comprador === w.toBase58())) {
+        mis.push({ key: pubkey.toBase58(), data, rol: 'comprador' });
+      }
+    } catch {
+      // ignorar
+    }
+  }
+
+  return mis;
 }
