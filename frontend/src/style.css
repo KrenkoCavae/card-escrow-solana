@@ -134,7 +134,7 @@ a { color: #67e8f9; }
   border-radius: 12px;
 }
 
-/* Efecto foil mejorado (inspirado en holofoil CSS) */
+/* Efecto foil con loop continuo */
 .carta.foil::before,
 .carta.foil::after {
   content: "";
@@ -147,38 +147,39 @@ a { color: #67e8f9; }
   background:
     linear-gradient(
       115deg,
-      transparent 10%,
-      rgba(255,255,255,.55) 30%,
-      rgba(180,240,255,.75) 45%,
-      rgba(255,220,180,.6) 55%,
-      rgba(255,255,255,.55) 70%,
-      transparent 90%
+      transparent 0%,
+      rgba(255,255,255,.15) 20%,
+      rgba(180,240,255,.55) 40%,
+      rgba(255,220,180,.45) 50%,
+      rgba(180,240,255,.55) 60%,
+      rgba(255,255,255,.15) 80%,
+      transparent 100%
     );
-  background-size: 250% 250%;
+  background-size: 300% 100%;
   mix-blend-mode: overlay;
-  animation: foil-shine 3.8s linear infinite;
-  opacity: .85;
+  animation: foil-shine 4.5s linear infinite;
+  opacity: .9;
 }
 .carta.foil::after {
   background:
     repeating-linear-gradient(
       45deg,
-      transparent 0%,
-      transparent 8%,
-      rgba(255,255,255,.08) 8%,
-      rgba(255,255,255,.08) 10%,
-      transparent 10%,
-      transparent 18%
+      transparent 0px,
+      transparent 12px,
+      rgba(255,255,255,.07) 12px,
+      rgba(255,255,255,.07) 14px,
+      transparent 14px,
+      transparent 26px
     );
   mix-blend-mode: soft-light;
-  opacity: .6;
-  animation: foil-sparkle 6s linear infinite;
+  opacity: .5;
+  animation: foil-sparkle 8s linear infinite;
 }
 @keyframes foil-shine {
-  0%   { background-position: 200% 0; }
+  0%   { background-position: 100% 0; }
   100% { background-position: -200% 0; }
 }
 @keyframes foil-sparkle {
   0%   { background-position: 0 0; }
-  100% { background-position: 40px 40px; }
+  100% { background-position: 52px 52px; }
 }
