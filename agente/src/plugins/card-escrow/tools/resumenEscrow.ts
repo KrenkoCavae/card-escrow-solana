@@ -1,6 +1,6 @@
 import { Connection, PublicKey } from '@solana/web3.js';
-import { getOrdenDecoder } from '../../../generated/accounts/orden.js';
-import { CARD_ESCROW_PROGRAM_ADDRESS } from '../../../generated/index.js';
+import { getOrdenDecoder } from '../../../../frontend/src/generated/accounts/orden.js';
+import { CARD_ESCROW_PROGRAM_ADDRESS } from '../../../../frontend/src/generated/index.js';
 
 export interface ResumenEscrow {
   existe: boolean;
@@ -19,8 +19,6 @@ export interface ResumenEscrow {
     vendedor: string;
   }[];
 }
-
-const states = ['Pendiente', 'Pagada', 'Completada', 'Enviada', 'Recibida', 'DevolucionSolicitada', 'Reembolsada'];
 
 export async function resumenEscrow(rpcUrl: string): Promise<ResumenEscrow> {
   const connection = new Connection(rpcUrl, 'confirmed');
@@ -48,7 +46,6 @@ export async function resumenEscrow(rpcUrl: string): Promise<ResumenEscrow> {
       else if (estado === 2) completadas++;
       else if (estado === 6) reembolsadas++;
 
-      // Monto retenido: órdenes pagadas o en tránsito (1, 3, 4, 5)
       if ([1, 3, 4, 5].includes(estado)) {
         montoRetenido += BigInt(data.total);
       }
