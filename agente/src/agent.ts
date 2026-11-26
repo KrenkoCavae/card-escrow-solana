@@ -1,8 +1,13 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import OpenAI from 'openai';
 import { cardEscrowPlugin } from './plugins/card-escrow/index.js';
 
-const baseURL = process.env.LLM_BASE_URL || 'http://localhost:1234/v1';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+const baseURL = process.env.LLM_BASE_URL || 'http://localhost:1235/v1';
 const model = process.env.LLM_MODEL || 'qwen2.5-7b-instruct';
 
 console.log('Usando LLM en:', baseURL);
