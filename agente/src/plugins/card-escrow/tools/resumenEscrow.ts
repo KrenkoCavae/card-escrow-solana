@@ -1,6 +1,6 @@
 import { Connection, PublicKey } from '@solana/web3.js';
-import { getOrdenDecoder } from '../../../../frontend/src/generated/accounts/orden.js';
-import { CARD_ESCROW_PROGRAM_ADDRESS } from '../../../../frontend/src/generated/index.js';
+import { getOrdenDecoder } from '../../../../../frontend/src/generated/accounts/orden.js';
+import { CARD_ESCROW_PROGRAM_ADDRESS } from '../../../../../frontend/src/generated/index.js';
 
 export interface ResumenEscrow {
   existe: boolean;
