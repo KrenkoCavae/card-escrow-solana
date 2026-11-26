@@ -1,1 +1,346 @@
-{"version":"0.1.0","name":"card_escrow","instructions":[{"name":"publicar","accounts":[{"name":"vendedor","isMut":true,"isSigner":true},{"name":"orden","isMut":true,"isSigner":false},{"name":"systemProgram","isMut":false,"isSigner":false}],"args":[{"name":"numero","type":"u64"},{"name":"precio","type":"u64"},{"name":"envio","type":"u64"}]},{"name":"marcarEnviada","accounts":[{"name":"vendedor","isMut":false,"isSigner":true},{"name":"orden","isMut":true,"isSigner":false}],"args":[]},{"name":"confirmarRecepcion","accounts":[{"name":"comprador","isMut":false,"isSigner":true},{"name":"orden","isMut":true,"isSigner":false}],"args":[]},{"name":"solicitarDevolucion","accounts":[{"name":"comprador","isMut":false,"isSigner":true},{"name":"orden","isMut":true,"isSigner":false}],"args":[]},{"name":"confirmarDevolucion","accounts":[{"name":"vendedor","isMut":false,"isSigner":true},{"name":"comprador","isMut":true,"isSigner":false},{"name":"orden","isMut":true,"isSigner":false},{"name":"boveda","isMut":true,"isSigner":false}],"args":[]},{"name":"cancelar","accounts":[{"name":"vendedor","isMut":true,"isSigner":true},{"name":"orden","isMut":true,"isSigner":false}],"args":[]},{"name":"pagar","accounts":[{"name":"comprador","isMut":true,"isSigner":true},{"name":"orden","isMut":true,"isSigner":false},{"name":"boveda","isMut":true,"isSigner":false},{"name":"systemProgram","isMut":false,"isSigner":false}],"args":[]},{"name":"aceptar","accounts":[{"name":"comprador","isMut":true,"isSigner":true},{"name":"orden","isMut":true,"isSigner":false},{"name":"vendedor","isMut":true,"isSigner":false},{"name":"boveda","isMut":true,"isSigner":false}],"args":[]}],"accounts":[{"name":"Orden","type":{"kind":"struct","fields":[{"name":"vendedor","type":"publicKey"},{"name":"comprador","type":"publicKey"},{"name":"numero","type":"u64"},{"name":"precio","type":"u64"},{"name":"envio","type":"u64"},{"name":"total","type":"u64"},{"name":"estado","type":{"defined":"Estado"}}]}},{"name":"Boveda","type":{"kind":"struct","fields":[{"name":"orden","type":"publicKey"}]}}],"types":[{"name":"Estado","type":{"kind":"enum","variants":[{"name":"Pendiente"},{"name":"Pagada"},{"name":"Completada"},{"name":"Enviada"},{"name":"Recibida"},{"name":"DevolucionSolicitada"},{"name":"Reembolsada"}]}}],"errors":[{"code":6000,"name":"ImporteInvalido","msg":"El precio debe ser positivo y el total debe caber en u64."},{"code":6001,"name":"EstadoInvalido","msg":"La operacion no esta permitida en el estado actual."},{"code":6002,"name":"CompradorInvalido","msg":"El vendedor no puede pagar su propia orden."},{"code":6003,"name":"CompradorNoAutorizado","msg":"Solo el comprador de la orden puede aceptar la carta."}]}
+{
+  "version": "0.1.0",
+  "name": "card_escrow",
+  "instructions": [
+    {
+      "name": "publicar",
+      "accounts": [
+        {
+          "name": "vendedor",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "orden",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "numero",
+          "type": "u64"
+        },
+        {
+          "name": "idCarta",
+          "type": "u8"
+        },
+        {
+          "name": "esFoil",
+          "type": "bool"
+        },
+        {
+          "name": "condicion",
+          "type": {
+            "defined": "Condicion"
+          }
+        },
+        {
+          "name": "precio",
+          "type": "u64"
+        },
+        {
+          "name": "envio",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "marcarEnviada",
+      "accounts": [
+        {
+          "name": "vendedor",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "orden",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "confirmarRecepcion",
+      "accounts": [
+        {
+          "name": "comprador",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "orden",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "solicitarDevolucion",
+      "accounts": [
+        {
+          "name": "comprador",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "orden",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "confirmarDevolucion",
+      "accounts": [
+        {
+          "name": "vendedor",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "comprador",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "orden",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "boveda",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "cancelar",
+      "accounts": [
+        {
+          "name": "vendedor",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "orden",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "pagar",
+      "accounts": [
+        {
+          "name": "comprador",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "orden",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "boveda",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "aceptar",
+      "accounts": [
+        {
+          "name": "comprador",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "orden",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vendedor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "boveda",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Orden",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "vendedor",
+            "type": "publicKey"
+          },
+          {
+            "name": "comprador",
+            "type": "publicKey"
+          },
+          {
+            "name": "numero",
+            "type": "u64"
+          },
+          {
+            "name": "idCarta",
+            "type": "u8"
+          },
+          {
+            "name": "esFoil",
+            "type": "bool"
+          },
+          {
+            "name": "condicion",
+            "type": {
+              "defined": "Condicion"
+            }
+          },
+          {
+            "name": "precio",
+            "type": "u64"
+          },
+          {
+            "name": "envio",
+            "type": "u64"
+          },
+          {
+            "name": "total",
+            "type": "u64"
+          },
+          {
+            "name": "estado",
+            "type": {
+              "defined": "Estado"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Boveda",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "orden",
+            "type": "publicKey"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "Estado",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Pendiente"
+          },
+          {
+            "name": "Pagada"
+          },
+          {
+            "name": "Completada"
+          },
+          {
+            "name": "Enviada"
+          },
+          {
+            "name": "Recibida"
+          },
+          {
+            "name": "DevolucionSolicitada"
+          },
+          {
+            "name": "Reembolsada"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Condicion",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Mint"
+          },
+          {
+            "name": "NearMint"
+          },
+          {
+            "name": "LightlyPlayed"
+          },
+          {
+            "name": "ModeratelyPlayed"
+          },
+          {
+            "name": "HeavilyPlayed"
+          },
+          {
+            "name": "Damaged"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "ImporteInvalido",
+      "msg": "El precio debe ser positivo y el total debe caber en u64."
+    },
+    {
+      "code": 6001,
+      "name": "EstadoInvalido",
+      "msg": "La operacion no esta permitida en el estado actual."
+    },
+    {
+      "code": 6002,
+      "name": "CompradorInvalido",
+      "msg": "El vendedor no puede pagar su propia orden."
+    },
+    {
+      "code": 6003,
+      "name": "CompradorNoAutorizado",
+      "msg": "Solo el comprador de la orden puede aceptar la carta."
+    },
+    {
+      "code": 6004,
+      "name": "CartaInvalida",
+      "msg": "El id de carta debe estar entre 1 y 5."
+    }
+  ]
+}
