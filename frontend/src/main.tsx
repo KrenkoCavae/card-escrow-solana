@@ -279,26 +279,27 @@ function Publicar({
       <h2>Publicar oferta</h2>
       <form onSubmit={submit}>
         <div className="amounts">
-          <div>
+          <div className="form-field">
             <label>Carta</label>
             <select value={idCarta} onChange={e => setIdCarta(Number(e.target.value))}>
               {[1,2,3,4,5].map(id => <option key={id} value={id}>{obtenerCarta(id)?.nombre}</option>)}
             </select>
           </div>
-          <div>
-            <label><input type="checkbox" checked={esFoil} onChange={e => setEsFoil(e.target.checked)} /> Foil</label>
-          </div>
-          <div>
+          <div className="form-field">
             <label>Condición</label>
             <select value={condicion} onChange={e => setCondicion(Number(e.target.value) as Condicion)}>
               {condiciones.map((n, i) => <option key={i} value={i}>{n}</option>)}
             </select>
           </div>
-          <div>
+          <div className="checkbox-field">
+            <input type="checkbox" id="foil" checked={esFoil} onChange={e => setEsFoil(e.target.checked)} />
+            <label htmlFor="foil" style={{ margin: 0 }}>Foil</label>
+          </div>
+          <div className="form-field">
             <label>Precio (SOL)</label>
             <input value={price} onChange={e => setPrice(e.target.value)} required />
           </div>
-          <div>
+          <div className="form-field">
             <label>Envío (SOL)</label>
             <input value={shipping} onChange={e => setShipping(e.target.value)} required />
           </div>
