@@ -23,8 +23,11 @@ export const CARD_ESCROW_ERROR__ESTADO_INVALIDO = 0x1771; // 6001
 export const CARD_ESCROW_ERROR__COMPRADOR_INVALIDO = 0x1772; // 6002
 /** CompradorNoAutorizado: Solo el comprador de la orden puede aceptar la carta. */
 export const CARD_ESCROW_ERROR__COMPRADOR_NO_AUTORIZADO = 0x1773; // 6003
+/** CartaInvalida: El id de carta debe estar entre 1 y 5. */
+export const CARD_ESCROW_ERROR__CARTA_INVALIDA = 0x1774; // 6004
 
 export type CardEscrowError =
+  | typeof CARD_ESCROW_ERROR__CARTA_INVALIDA
   | typeof CARD_ESCROW_ERROR__COMPRADOR_INVALIDO
   | typeof CARD_ESCROW_ERROR__COMPRADOR_NO_AUTORIZADO
   | typeof CARD_ESCROW_ERROR__ESTADO_INVALIDO
@@ -33,6 +36,7 @@ export type CardEscrowError =
 let cardEscrowErrorMessages: Record<CardEscrowError, string> | undefined;
 if (process.env["NODE_ENV"] !== "production") {
   cardEscrowErrorMessages = {
+    [CARD_ESCROW_ERROR__CARTA_INVALIDA]: `El id de carta debe estar entre 1 y 5.`,
     [CARD_ESCROW_ERROR__COMPRADOR_INVALIDO]: `El vendedor no puede pagar su propia orden.`,
     [CARD_ESCROW_ERROR__COMPRADOR_NO_AUTORIZADO]: `Solo el comprador de la orden puede aceptar la carta.`,
     [CARD_ESCROW_ERROR__ESTADO_INVALIDO]: `La operacion no esta permitida en el estado actual.`,
