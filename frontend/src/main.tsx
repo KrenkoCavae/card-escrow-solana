@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { PublicKey } from '@solana/web3.js';
 import { createRoot } from 'react-dom/client';
-import { actionInstruction, condiciones, explorer, formatSol, getWallet, listarOfertas, program, publish, readOrder, send, states } from './chain';
+import { actionInstruction, condiciones, explorer, formatSol, getWallet, listarMisOrdenes, listarOfertas, program, publish, readOrder, send, states } from './chain';
 import type { Action, Order } from './chain';
 import { obtenerCarta } from './cartas';
 import { Condicion } from './generated/types';
@@ -123,7 +123,7 @@ function App() {
         {ruta === '#/catalogo' && <Catalogo busy={busy} run={run} />}
         {esOrden && <DetalleOrden ordenKey={ordenKey} actor={actor} busy={busy} run={run} setSignature={setSignature} setMessage={setMessage} />}
         {ruta === '#/publicar' && <Publicar actor={actor} busy={busy} run={run} setSignature={setSignature} setMessage={setMessage} />}
-        {ruta === '#/mis-ordenes' && <MisOrdenes actor={actor} />}
+        {ruta === '#/mis-ordenes' && <MisOrdenes actor={actor} busy={busy} run={run} setSignature={setSignature} setMessage={setMessage} />}
 
         <p role="status">{busy ? 'Procesando…' : message}</p>
         {error && <p role="alert" className="error">{error}</p>}
@@ -386,11 +386,85 @@ function Publicar({
   );
 }
 
-function MisOrdenes({ actor }: { actor: string }) {
+function MisOrdenes({
+  actor, busy, run, setSignature, setMessage
+}: {
+  actor: string;
+  busy: boolean;
+  run: (fn: () => Promise<void>) => void;
+  setSignature: (s: string) => void;
+  setMessage: (m: string) => void;
+}) {
+  const [ordenes, setOrdenes] = useState<{ key: string; data: Order; rol: 'vendedor' | 'comprador' }[]>([]);
+
+  async function cargar() {
+    if (!actor) {
+      setOrdenes([]);
+      return;
+    }
+    setOrdenes(await listarMisOrdenes(actor));
+  }
+
+  useEffect(() => { void cargar(); }, [actor]);
+
+  function accionesDisponibles(data: Order, rol: 'vendedor' | 'comprador'): Action[] {
+    const { estado } = data;
+    const list: Action[] = [];
+    if (rol === 'vendedor') {
+      if (estado === 1) list.push('enviar');
+      if (estado === 5) list.push('reembolsar');
+    }
+    if (rol === 'comprador') {
+      if (estado === 3) list.push('recibir');
+      if (estado === 4) list.push('aceptar', 'devolver');
+    }
+    return list;
+  }
+
+  function perform(key: string, action: Action) {
+    void run(async () => {
+      const wallet = getWallet();
+      if (!wallet || !actor) throw new Error('Conecta Solflare');
+      const latest = await readOrder(key);
+      setSignature('');
+      await send(wallet, actor, actionInstruction(action, key, latest, actor), setSignature);
+      setMessage('Operación confirmada');
+      await cargar();
+    });
+  }
+
   return (
     <section>
-      <h2>Mis órdenes</h2>
-      {!actor ? <p>Conecta tu wallet para ver tus órdenes.</p> : <p>Próximamente: filtro de órdenes donde eres vendedor o comprador.</p>}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2>Mis órdenes</h2>
+        {actor && <button disabled={busy} onClick={() => void run(cargar)}>Actualizar</button>}
+      </div>
+      {!actor && <p>Conecta tu wallet para ver tus órdenes.</p>}
+      {actor && ordenes.length === 0 && <p>No tienes órdenes activas o finalizadas.</p>}
+      <div className="grid-catalogo">
+        {ordenes.map(({ key, data, rol }) => {
+          const carta = obtenerCarta(data.idCarta);
+          const disponibles = accionesDisponibles(data, rol);
+          return (
+            <div key={key} className="card-oferta">
+              <CartaVisual idCarta={data.idCarta} esFoil={data.esFoil} />
+              <h3>{carta?.nombre ?? 'Carta'}</h3>
+              <p>
+                <strong>{rol === 'vendedor' ? 'Venta' : 'Compra'}</strong><br />
+                {data.esFoil ? 'Foil · ' : ''}{condiciones[data.condicion]}<br />
+                {formatSol(data.precio)}<br />
+                <span className="status">{states[data.estado]}</span>
+              </p>
+              <div className="actions" style={{ marginTop: '0.5rem' }}>
+                {disponibles.map(a => (
+                  <button key={a} disabled={busy} onClick={() => perform(key, a)}>{actions[a]}</button>
+                ))}
+                <a href={`#/orden/${key}`}><button>Ver detalle</button></a>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </section>
   );
 }
