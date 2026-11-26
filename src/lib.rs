@@ -9,16 +9,26 @@ pub mod card_escrow {
     pub fn publicar(
         ctx: Context<Publicar>,
         numero: u64,
+        id_carta: u8,
+        es_foil: bool,
+        condicion: Condicion,
         precio: u64,
         envio: u64,
     ) -> Result<()> {
         require!(precio > 0, ErrorEscrow::ImporteInvalido);
-        let total = precio.checked_add(envio).ok_or(ErrorEscrow::ImporteInvalido)?;
+        require!(id_carta >= 1 && id_carta <= 5, ErrorEscrow::CartaInvalida);
+
+        let total = precio
+            .checked_add(envio)
+            .ok_or(ErrorEscrow::ImporteInvalido)?;
 
         ctx.accounts.orden.set_inner(Orden {
             vendedor: ctx.accounts.vendedor.key(),
             comprador: Pubkey::default(),
             numero,
+            id_carta,
+            es_foil,
+            condicion,
             precio,
             envio,
             total,
@@ -28,43 +38,43 @@ pub mod card_escrow {
     }
 
     pub fn marcar_enviada(ctx: Context<ActualizarComoVendedor>) -> Result<()> {
-    let orden = &mut ctx.accounts.orden;
-    require!(orden.estado == Estado::Pagada, ErrorEscrow::EstadoInvalido);
-    orden.estado = Estado::Enviada;
-    Ok(())
+        let orden = &mut ctx.accounts.orden;
+        require!(orden.estado == Estado::Pagada, ErrorEscrow::EstadoInvalido);
+        orden.estado = Estado::Enviada;
+        Ok(())
     }
 
-pub fn confirmar_recepcion(ctx: Context<ActualizarComoComprador>) -> Result<()> {
-    let orden = &mut ctx.accounts.orden;
-    require!(orden.estado == Estado::Enviada, ErrorEscrow::EstadoInvalido);
-    orden.estado = Estado::Recibida;
-    Ok(())
+    pub fn confirmar_recepcion(ctx: Context<ActualizarComoComprador>) -> Result<()> {
+        let orden = &mut ctx.accounts.orden;
+        require!(orden.estado == Estado::Enviada, ErrorEscrow::EstadoInvalido);
+        orden.estado = Estado::Recibida;
+        Ok(())
     }
 
-pub fn solicitar_devolucion(ctx: Context<ActualizarComoComprador>) -> Result<()> {
-    let orden = &mut ctx.accounts.orden;
-    require!(orden.estado == Estado::Recibida, ErrorEscrow::EstadoInvalido);
-    orden.estado = Estado::DevolucionSolicitada;
-    Ok(())
+    pub fn solicitar_devolucion(ctx: Context<ActualizarComoComprador>) -> Result<()> {
+        let orden = &mut ctx.accounts.orden;
+        require!(orden.estado == Estado::Recibida, ErrorEscrow::EstadoInvalido);
+        orden.estado = Estado::DevolucionSolicitada;
+        Ok(())
     }
 
-pub fn confirmar_devolucion(ctx: Context<ConfirmarDevolucion>) -> Result<()> {
-    let orden = &mut ctx.accounts.orden;
-    require!(
-        orden.estado == Estado::DevolucionSolicitada,
-        ErrorEscrow::EstadoInvalido
-    );
-    orden.estado = Estado::Reembolsada;
-    Ok(())
+    pub fn confirmar_devolucion(ctx: Context<ConfirmarDevolucion>) -> Result<()> {
+        let orden = &mut ctx.accounts.orden;
+        require!(
+            orden.estado == Estado::DevolucionSolicitada,
+            ErrorEscrow::EstadoInvalido
+        );
+        orden.estado = Estado::Reembolsada;
+        Ok(())
     }
 
     pub fn cancelar(ctx: Context<Cancelar>) -> Result<()> {
-    require!(
-        ctx.accounts.orden.estado == Estado::Pendiente,
-        ErrorEscrow::EstadoInvalido
-    );
-    Ok(())
-    }   
+        require!(
+            ctx.accounts.orden.estado == Estado::Pendiente,
+            ErrorEscrow::EstadoInvalido
+        );
+        Ok(())
+    }
 
     pub fn pagar(ctx: Context<Pagar>) -> Result<()> {
         let orden = &mut ctx.accounts.orden;
@@ -97,10 +107,12 @@ pub fn confirmar_devolucion(ctx: Context<ConfirmarDevolucion>) -> Result<()> {
 
         let boveda = ctx.accounts.boveda.to_account_info();
         let vendedor = ctx.accounts.vendedor.to_account_info();
-        let saldo_boveda = boveda.lamports()
+        let saldo_boveda = boveda
+            .lamports()
             .checked_sub(orden.total)
             .ok_or(ErrorEscrow::ImporteInvalido)?;
-        let saldo_vendedor = vendedor.lamports()
+        let saldo_vendedor = vendedor
+            .lamports()
             .checked_add(orden.total)
             .ok_or(ErrorEscrow::ImporteInvalido)?;
 
@@ -112,7 +124,7 @@ pub fn confirmar_devolucion(ctx: Context<ConfirmarDevolucion>) -> Result<()> {
 }
 
 #[derive(Accounts)]
-#[instruction(numero: u64)]
+#[instruction(numero: u64, id_carta: u8, es_foil: bool, condicion: Condicion, precio: u64, envio: u64)]
 pub struct Publicar<'info> {
     #[account(mut)]
     pub vendedor: Signer<'info>,
@@ -216,6 +228,9 @@ pub struct Orden {
     pub vendedor: Pubkey,
     pub comprador: Pubkey,
     pub numero: u64,
+    pub id_carta: u8,
+    pub es_foil: bool,
+    pub condicion: Condicion,
     pub precio: u64,
     pub envio: u64,
     pub total: u64,
@@ -223,7 +238,8 @@ pub struct Orden {
 }
 
 impl Orden {
-    const TAMANO: usize = 32 + 32 + 8 * 4 + 1;
+    // 32 + 32 + 8 + 1 + 1 + 1 + 8 + 8 + 8 + 1 = 100
+    const TAMANO: usize = 32 + 32 + 8 + 1 + 1 + 1 + 8 + 8 + 8 + 1;
 }
 
 #[account]
@@ -242,6 +258,16 @@ pub enum Estado {
     Reembolsada,
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq)]
+pub enum Condicion {
+    Mint,             // M
+    NearMint,         // NM
+    LightlyPlayed,    // LP
+    ModeratelyPlayed, // MP
+    HeavilyPlayed,    // HP
+    Damaged,          // DMG / PO
+}
+
 #[error_code]
 pub enum ErrorEscrow {
     #[msg("El precio debe ser positivo y el total debe caber en u64.")]
@@ -252,4 +278,6 @@ pub enum ErrorEscrow {
     CompradorInvalido,
     #[msg("Solo el comprador de la orden puede aceptar la carta.")]
     CompradorNoAutorizado,
+    #[msg("El id de carta debe estar entre 1 y 5.")]
+    CartaInvalida,
 }
