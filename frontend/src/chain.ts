@@ -121,3 +121,30 @@ export async function send(wallet: Wallet, actor: string, ix: Instruction, onSen
   }
   throw new Error('Confirmación pendiente. Revisa la firma en Explorer antes de volver a enviar.');
 }
+
+/** Lista las órdenes en estado Pendiente (ofertas activas). */
+export async function listarOfertas(): Promise<{ key: string; data: Order }[]> {
+  const accounts = await rpc.getProgramAccounts(program, {
+    filters: [
+      { dataSize: 8 + 100 }, // discriminador + datos de Orden
+    ],
+  });
+
+  const decoder = getOrdenDecoder();
+  const ofertas: { key: string; data: Order }[] = [];
+
+  for (const { pubkey, account } of accounts) {
+    try {
+      if (!account.owner.equals(program)) continue;
+      const data = decoder.decode(account.data);
+      // Solo órdenes pendientes (estado 0)
+      if (data.estado === 0) {
+        ofertas.push({ key: pubkey.toBase58(), data });
+      }
+    } catch {
+      // Ignorar cuentas que no se puedan decodificar
+    }
+  }
+
+  return ofertas;
+}
