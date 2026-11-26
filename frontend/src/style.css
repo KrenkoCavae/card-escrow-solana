@@ -70,3 +70,40 @@ a { color: #a9dcff; }
   color: #b7f4d5;
   font-size: clamp(1.6rem, 7vw, 3.5rem);
 }
+
+/* Efecto foil para las cartas */
+.carta {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0,0,0,.4);
+}
+.carta img {
+  width: 100%;
+  display: block;
+  border-radius: 12px;
+}
+.carta.foil::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(255,255,255,.35) 40%,
+    rgba(180,220,255,.55) 50%,
+    rgba(255,255,255,.35) 60%,
+    transparent 80%
+  );
+  background-size: 200% 200%;
+  mix-blend-mode: overlay;
+  animation: foil-shine 3.5s linear infinite;
+  pointer-events: none;
+  border-radius: 12px;
+}
+@keyframes foil-shine {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
