@@ -79,6 +79,14 @@ function App() {
     setActor(key.toBase58());
   }
 
+  async function disconnectWallet() {
+    const wallet = getWallet();
+    if (wallet?.disconnect) {
+      await wallet.disconnect();
+    }
+    setActor('');
+  }
+
   function navigate(to: string) {
     location.hash = to;
   }
@@ -99,9 +107,14 @@ function App() {
           <a href="#/catalogo">Catálogo</a>
           <a href="#/publicar">Publicar</a>
           <a href="#/mis-ordenes">Mis órdenes</a>
-          <button disabled={busy} onClick={() => void run(connectWallet)}>
-            {actor ? actor.slice(0, 4) + '…' + actor.slice(-4) : 'Conectar'}
-          </button>
+          {actor ? (
+            <>
+              <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{actor.slice(0, 4) + '…' + actor.slice(-4)}</span>
+              <button disabled={busy} onClick={() => void run(disconnectWallet)}>Desconectar</button>
+            </>
+          ) : (
+            <button disabled={busy} onClick={() => void run(connectWallet)}>Conectar</button>
+          )}
         </nav>
       </header>
 
