@@ -95,6 +95,7 @@ function App() {
           <h1 style={{ cursor: 'pointer' }} onClick={() => navigate('#/')}>Card Escrow</h1>
         </div>
         <nav style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          <a href="#/">Home</a>
           <a href="#/catalogo">Catálogo</a>
           <a href="#/publicar">Publicar</a>
           <a href="#/mis-ordenes">Mis órdenes</a>
@@ -105,7 +106,7 @@ function App() {
       </header>
 
       <main>
-        {ruta === '#/' && <Explainer />}
+        {ruta === '#/' && <Landing />}
         {ruta === '#/catalogo' && <Catalogo busy={busy} run={run} />}
         {esOrden && <DetalleOrden ordenKey={ordenKey} actor={actor} busy={busy} run={run} setSignature={setSignature} setMessage={setMessage} />}
         {ruta === '#/publicar' && <Publicar actor={actor} busy={busy} run={run} setSignature={setSignature} setMessage={setMessage} />}
@@ -120,22 +121,82 @@ function App() {
   );
 }
 
-function Explainer() {
+function Landing() {
+  const [destacada, setDestacada] = useState<{ key: string; data: Order } | null>(null);
+
+  useEffect(() => {
+    void (async () => {
+      const ofertas = await listarOfertas();
+      const foilsMint = ofertas
+        .filter(o => o.data.esFoil && o.data.condicion === Condicion.Mint)
+        .sort((a, b) => {
+          if (a.data.precio !== b.data.precio) return Number(b.data.precio - a.data.precio);
+          return b.data.numero > a.data.numero ? 1 : -1;
+        });
+      setDestacada(foilsMint[0] ?? null);
+    })();
+  }, []);
+
   return (
-    <section>
-      <h2>Escrow de cartas TCG en Solana</h2>
-      <p>Compra y vende cartas de forma segura. El pago queda bloqueado en un escrow hasta que el comprador confirma la recepción.</p>
-      <ul>
-        <li>Publica una carta con condición y precio.</li>
-        <li>El comprador paga y el dinero queda retenido.</li>
-        <li>El vendedor envía la carta.</li>
-        <li>El comprador confirma o solicita devolución.</li>
-      </ul>
-      <div className="actions">
-        <a href="#/catalogo"><button>Ver catálogo</button></a>
-        <a href="#/publicar"><button>Publicar carta</button></a>
-      </div>
-    </section>
+    <div>
+      <section style={{ textAlign: 'center', padding: '2.5rem 1.5rem' }}>
+        <h2 style={{ fontSize: '2.2rem', marginBottom: '.6rem' }}>Compra y vende cartas con confianza</h2>
+        <p style={{ fontSize: '1.15rem', color: '#cbd5e1', maxWidth: '36rem', margin: '0 auto 1.5rem' }}>
+          Escrow seguro en Solana. El pago queda bloqueado hasta que confirmes la recepción de tu carta.
+        </p>
+        <div className="actions" style={{ justifyContent: 'center' }}>
+          <a href="#/catalogo"><button>Explorar catálogo</button></a>
+          <a href="#/publicar"><button>Publicar una carta</button></a>
+        </div>
+      </section>
+
+      {destacada && (
+        <section>
+          <h2>Carta destacada</h2>
+          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <div style={{ maxWidth: 240 }}>
+              <CartaVisual idCarta={destacada.data.idCarta} esFoil={true} />
+            </div>
+            <div>
+              <h3 style={{ marginTop: 0 }}>{obtenerCarta(destacada.data.idCarta)?.nombre}</h3>
+              <p>
+                <strong>Foil · Mint</strong><br />
+                Precio: <strong>{formatSol(destacada.data.precio)}</strong>
+              </p>
+              <a href={`#/orden/${destacada.key}`}><button>Ver oferta</button></a>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section>
+        <h2>Promociones del momento</h2>
+        <div className="grid-catalogo">
+          <div className="card-oferta">
+            <h3>Envío gratis en tu primera compra</h3>
+            <p>Usa el código <strong>DEVNETFREE</strong> al publicar (demo).</p>
+          </div>
+          <div className="card-oferta">
+            <h3>Vendedores verificados</h3>
+            <p>Todas las transacciones quedan registradas en Solana Explorer.</p>
+          </div>
+          <div className="card-oferta">
+            <h3>Protección total</h3>
+            <p>Si hay problema, puedes solicitar devolución antes de liberar el pago.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>¿Cómo funciona?</h2>
+        <ol style={{ paddingLeft: '1.2rem', lineHeight: 1.7 }}>
+          <li>El vendedor publica la carta con condición, foil y precio.</li>
+          <li>El comprador paga. El dinero queda retenido en el escrow.</li>
+          <li>El vendedor envía la carta física.</li>
+          <li>El comprador confirma la recepción o solicita devolución.</li>
+        </ol>
+      </section>
+    </div>
   );
 }
 
