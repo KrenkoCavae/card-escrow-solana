@@ -4,16 +4,11 @@
 
 **Proyecto propio.** Card Escrow es una demostración de compraventa de cartas TCG en Solana Devnet. El vendedor publica una oferta indicando la carta (de un catálogo de 5), si es foil, su condición (Mint a Damaged), el precio y el costo de envío. El comprador deposita el total en una bóveda asociada a la orden. Tras el envío y la confirmación de recepción, el comprador puede aceptar la carta y liberar el pago, o solicitar una devolución. En ese caso el vendedor confirma y el programa reembolsa al comprador y cierra la bóveda.
 
-El programa está escrito en Rust con Anchor. El frontend usa React, TypeScript y Vite. Codama genera el cliente desde [idl.json](idl.json). Solflare firma las transacciones.  
-[Código del programa](src/lib.rs) · [Cliente generado](frontend/src/generated)
-
 ## Configuración
 
 - Red y fondos de prueba en **Solana Devnet**.
 - Program ID `Hq83Mc7kCATrYLwQ71e3Q7QoKBxU54iAH5hiyx8j4Gb7`.  
   [Ver el programa en Explorer](https://explorer.solana.com/address/Hq83Mc7kCATrYLwQ71e3Q7QoKBxU54iAH5hiyx8j4Gb7?cluster=devnet)
-- Node.js y npm para el frontend.
-- Solflare para firmar. Usa cuentas distintas para vendedor y comprador (ambas con SOL de Devnet). La consulta del catálogo y de órdenes es pública y no requiere wallet.
 
 ## Ejecución local / Codespaces
 
@@ -56,7 +51,7 @@ Navegación principal:
 5. Como comprador, paga la orden. Verifica en Explorer que el total se depositó en la bóveda.
 6. Completa el flujo (marcar enviada → confirmar recepción → aceptar) o prueba un rechazo (por ejemplo, intentar aceptar antes de marcar como recibida → `EstadoInvalido`).
 
-## Pruebas y evidencias (cumplimiento de criterios del bootcamp)
+## Pruebas y evidencias
 
 | Caso | Resultado observado en Devnet |
 | --- | --- |
@@ -70,7 +65,7 @@ Navegación principal:
 | Solicitar y confirmar devolución | Orden Reembolsada, bóveda cerrada y fondos devueltos al comprador. [Solicitud](https://explorer.solana.com/tx/387EAyZwzoqQ9imwAxTMQPwcJeaatsq2LyZsKMRV5pafUUc5Wk5KgTHxkZggC4HU3Z4h9KYXcdhiNvTkTn4cmBsc?cluster=devnet) · [Reembolso](https://explorer.solana.com/tx/5yYz24B5aaEz3HWbJrBfirJgCJnbN17FbqQK3T1J1FnU8bEAvZYDcDnut7Crvf8quaERMkvrqd3EpYUcXcoGkaUe?cluster=devnet) |
 | Id de carta fuera de rango (1-5) | Rechazo `CartaInvalida` (6004). |
 
-Los rechazos se verifican con el mensaje del programa y una lectura posterior de las cuentas (el estado de negocio se mantiene). Las transacciones exitosas tienen enlace a Solana Explorer en Devnet.
+Los rechazos se verifican con el mensaje del programa y una lectura posterior de las cuentas (el estado de negocio se mantiene).
 
 ## Correspondencia con criterios de evaluación
 
