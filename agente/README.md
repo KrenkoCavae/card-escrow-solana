@@ -70,6 +70,23 @@ El agente usa la herramienta `CARD_ESCROW_RESUMEN` y no inventa datos.
 - Monto total retenido (en órdenes pagadas o en tránsito)
 - Lista de ofertas activas (pendientes)
 
-## Caso sin registros
+## Caso sin registros (cuenta inexistente)
 
-Si no hay órdenes, la herramienta devuelve `existe: false` y todos los contadores en 0.
+Equivalente al caso “sin registro” del taller guiado.
+
+Cuando no hay órdenes en el programa (o se consulta un Program ID sin cuentas), la herramienta devuelve:
+
+```json
+{
+  "existe": false,
+  "total_ordenes": 0,
+  "pendientes": 0,
+  "pagadas": 0,
+  "completadas": 0,
+  "reembolsadas": 0,
+  "monto_total_retenido": "0",
+  "ofertas_activas": []
+}
+```
+
+Esto se puede comprobar temporalmente cambiando el `PROGRAM_ID` en `tools/resumenEscrow.ts` por uno sin cuentas y ejecutando `npm run prueba`.
