@@ -1,89 +1,86 @@
 :root {
   font-family: system-ui, sans-serif;
   color: #eaf2ff;
-  background: #101722;
+  background: #0f141c;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
 body { margin: 0; }
-main { max-width: 52rem; margin: auto; padding: 2rem 1.25rem; }
-header, .line, .actions {
+main { max-width: 56rem; margin: auto; padding: 1.5rem 1.25rem 3rem; }
+header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
-  gap: .75rem;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: #161e2b;
+  border-bottom: 1px solid #2a3648;
 }
-header, .line { justify-content: space-between; }
-h1 { font-size: clamp(2rem, 6vw, 3.4rem); margin: .25rem 0; }
-h2 { font-size: 1.25rem; margin: 0 0 1rem; }
+header h1 { font-size: 1.6rem; margin: 0; }
+nav a { color: #a9dcff; text-decoration: none; font-weight: 500; }
+nav a:hover { text-decoration: underline; }
+h2 { font-size: 1.4rem; margin: 0 0 1rem; }
 section {
-  margin-top: 1rem;
-  padding: 1.15rem;
-  background: #192434;
-  border: 1px solid #34465d;
+  margin-top: 1.25rem;
+  padding: 1.25rem;
+  background: #161e2b;
+  border: 1px solid #2a3648;
   border-radius: 1rem;
 }
-label { display: block; margin-bottom: .4rem; }
+label { display: block; margin-bottom: .35rem; font-size: .9rem; }
 small, label, dt { color: #b3c7df; }
-input, button {
+input, button, select {
   padding: .65rem .8rem;
   border: 1px solid #435772;
   border-radius: .55rem;
   font: inherit;
+  background: #0f141c;
+  color: #fff;
 }
-input { width: 100%; background: #101722; color: #fff; }
-.line input { flex: 1; min-width: 12rem; }
 button { background: #b7f4d5; color: #0f3024; font-weight: 650; cursor: pointer; }
-button:disabled { opacity: .6; cursor: default; }
+button:disabled { opacity: .55; cursor: default; }
 .amounts {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  gap: .8rem;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: .9rem;
 }
-dl { display: grid; grid-template-columns: auto 1fr; gap: .65rem 1rem; }
+dl { display: grid; grid-template-columns: auto 1fr; gap: .55rem 1rem; }
 dd { margin: 0; overflow-wrap: anywhere; }
 a { color: #a9dcff; }
-.actions { margin: .9rem 0; }
+.actions { margin: 1rem 0; display: flex; flex-wrap: wrap; gap: .6rem; }
 .error { color: #ffb8b1; }
 .status { color: #b7f4d5; font-weight: 700; }
 
-.checkout {
+.grid-catalogo {
   display: grid;
-  grid-template-columns: clamp(4.5rem, 18vw, 7rem) minmax(0, 1fr);
-  align-items: center;
-  gap: 1rem;
-  margin: 1rem 0;
-  padding: 1rem;
-  border: 1px solid #435772;
-  border-radius: .75rem;
-  background: #101722;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.1rem;
+  margin-top: 1rem;
 }
-.checkout h3 { margin: .25rem 0; }
-.checkout dl { margin-bottom: 0; }
-.demo-card {
-  display: grid;
-  place-items: center;
-  aspect-ratio: 5 / 7;
-  border: 3px solid #97ead1;
-  border-radius: .6rem;
-  background: radial-gradient(ellipse at 40% 35%, #4e75a9, #243355 50%, #111b36);
-  color: #b7f4d5;
-  font-size: clamp(1.6rem, 7vw, 3.5rem);
+.card-oferta {
+  background: #0f141c;
+  border: 1px solid #2a3648;
+  border-radius: .9rem;
+  padding: .9rem;
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
 }
+.card-oferta h3 { margin: .4rem 0 .15rem; font-size: 1.05rem; }
+.card-oferta p { margin: 0; font-size: .9rem; color: #c5d5ea; }
 
-/* Efecto foil para las cartas */
 .carta {
   position: relative;
   width: 100%;
-  max-width: 280px;
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0,0,0,.4);
+  box-shadow: 0 6px 16px rgba(0,0,0,.35);
 }
 .carta img {
   width: 100%;
   display: block;
-  border-radius: 12px;
+  border-radius: 10px;
 }
 .carta.foil::after {
   content: "";
@@ -101,7 +98,7 @@ a { color: #a9dcff; }
   mix-blend-mode: overlay;
   animation: foil-shine 3.5s linear infinite;
   pointer-events: none;
-  border-radius: 12px;
+  border-radius: 10px;
 }
 @keyframes foil-shine {
   0%   { background-position: 200% 0; }
