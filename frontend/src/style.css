@@ -28,22 +28,39 @@ section {
   border: 1px solid #2a3648;
   border-radius: 1rem;
 }
-label { display: block; margin-bottom: .35rem; font-size: .9rem; }
-small, label, dt { color: #b3c7df; }
+label { display: block; margin-bottom: .4rem; font-size: .9rem; color: #b3c7df; }
+small, dt { color: #b3c7df; }
 input, button, select {
-  padding: .65rem .8rem;
+  padding: .7rem .85rem;
   border: 1px solid #435772;
   border-radius: .55rem;
   font: inherit;
   background: #0f141c;
   color: #fff;
+  width: 100%;
 }
-button { background: #b7f4d5; color: #0f3024; font-weight: 650; cursor: pointer; }
+button { background: #b7f4d5; color: #0f3024; font-weight: 650; cursor: pointer; width: auto; }
 button:disabled { opacity: .55; cursor: default; }
 .amounts {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  gap: .9rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1.1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+}
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-top: 1.6rem;
+}
+.checkbox-field input {
+  width: auto;
+  margin: 0;
 }
 dl { display: grid; grid-template-columns: auto 1fr; gap: .55rem 1rem; }
 dd { margin: 0; overflow-wrap: anywhere; }
