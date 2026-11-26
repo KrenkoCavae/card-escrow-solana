@@ -20,6 +20,7 @@ export const explorer = (kind: 'address' | 'tx', value: string) =>
 export interface Wallet {
   publicKey?: PublicKey | null;
   connect(): Promise<void | { publicKey?: PublicKey | null }>;
+  disconnect?(): Promise<void>;
   signTransaction(tx: Transaction): Promise<Transaction>;
   on?(event: string, fn: (key?: PublicKey | null) => void): void;
   off?(event: string, fn: (key?: PublicKey | null) => void): void;
