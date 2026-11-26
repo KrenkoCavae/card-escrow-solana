@@ -8,10 +8,12 @@ import {
   getConfirmarRecepcionInstruction, getAceptarInstruction,
   getSolicitarDevolucionInstruction, getConfirmarDevolucionInstruction,
 } from './generated';
+import { Condicion } from './generated/types';
 
 export const program = new PublicKey(CARD_ESCROW_PROGRAM_ADDRESS);
 export const rpc = new Connection(import.meta.env.VITE_DEVNET_RPC_URL || clusterApiUrl('devnet'), 'confirmed');
 export const states = ['Pendiente de pago', 'Pagada', 'Completada', 'Enviada', 'Recibida', 'Devolución solicitada', 'Reembolsada'];
+export const condiciones = ['Mint (M)', 'Near Mint (NM)', 'Lightly Played (LP)', 'Moderately Played (MP)', 'Heavily Played (HP)', 'Damaged (DMG)'];
 export const explorer = (kind: 'address' | 'tx', value: string) =>
   'https://explorer.solana.com/' + kind + '/' + value + '?cluster=devnet';
 
@@ -48,16 +50,36 @@ export function formatSol(value: bigint) {
   return String(value / 1_000_000_000n) + (fraction ? '.' + fraction : '') + ' SOL';
 }
 
-export function publish(seller: string, price: string, shipping: string) {
+export function publish(
+  seller: string,
+  idCarta: number,
+  esFoil: boolean,
+  condicion: Condicion,
+  price: string,
+  shipping: string,
+) {
   const precio = parseSol(price);
   const envio = parseSol(shipping);
   if (precio === 0n || precio + envio > (1n << 64n) - 1n) throw new Error('El importe está fuera de rango.');
+  if (idCarta < 1 || idCarta > 5) throw new Error('El id de carta debe estar entre 1 y 5.');
+
   const nonce = Buffer.from(crypto.getRandomValues(new Uint8Array(8)));
   const [key] = PublicKey.findProgramAddressSync([Buffer.from('orden'), new PublicKey(seller).toBuffer(), nonce], program);
   const orden = address(key.toBase58());
-  return { key: orden, instruction: getPublicarInstruction({
-    vendedor: createNoopSigner(address(seller)), orden, numero: nonce.readBigUInt64LE(), precio, envio,
-  }) };
+
+  return {
+    key: orden,
+    instruction: getPublicarInstruction({
+      vendedor: createNoopSigner(address(seller)),
+      orden,
+      numero: nonce.readBigUInt64LE(),
+      idCarta,
+      esFoil,
+      condicion,
+      precio,
+      envio,
+    }),
+  };
 }
 
 export type Action = 'pagar' | 'cancelar' | 'enviar' | 'recibir' | 'aceptar' | 'devolver' | 'reembolsar';
