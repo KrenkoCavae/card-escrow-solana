@@ -17,12 +17,16 @@ import {
   fixEncoderSize,
   getAddressDecoder,
   getAddressEncoder,
+  getBooleanDecoder,
+  getBooleanEncoder,
   getBytesDecoder,
   getBytesEncoder,
   getStructDecoder,
   getStructEncoder,
   getU64Decoder,
   getU64Encoder,
+  getU8Decoder,
+  getU8Encoder,
   transformEncoder,
   type Account,
   type Address,
@@ -41,8 +45,12 @@ import {
   type ReadonlyUint8Array,
 } from "@solana/kit";
 import {
+  getCondicionDecoder,
+  getCondicionEncoder,
   getEstadoDecoder,
   getEstadoEncoder,
+  type Condicion,
+  type CondicionArgs,
   type Estado,
   type EstadoArgs,
 } from "../types";
@@ -60,6 +68,9 @@ export type Orden = {
   vendedor: Address;
   comprador: Address;
   numero: bigint;
+  idCarta: number;
+  esFoil: boolean;
+  condicion: Condicion;
   precio: bigint;
   envio: bigint;
   total: bigint;
@@ -70,6 +81,9 @@ export type OrdenArgs = {
   vendedor: Address | HasAddress;
   comprador: Address | HasAddress;
   numero: number | bigint;
+  idCarta: number;
+  esFoil: boolean;
+  condicion: CondicionArgs;
   precio: number | bigint;
   envio: number | bigint;
   total: number | bigint;
@@ -84,6 +98,9 @@ export function getOrdenEncoder(): FixedSizeEncoder<OrdenArgs> {
       ["vendedor", getAddressEncoder()],
       ["comprador", getAddressEncoder()],
       ["numero", getU64Encoder()],
+      ["idCarta", getU8Encoder()],
+      ["esFoil", getBooleanEncoder()],
+      ["condicion", getCondicionEncoder()],
       ["precio", getU64Encoder()],
       ["envio", getU64Encoder()],
       ["total", getU64Encoder()],
@@ -100,6 +117,9 @@ export function getOrdenDecoder(): FixedSizeDecoder<Orden> {
     ["vendedor", getAddressDecoder()],
     ["comprador", getAddressDecoder()],
     ["numero", getU64Decoder()],
+    ["idCarta", getU8Decoder()],
+    ["esFoil", getBooleanDecoder()],
+    ["condicion", getCondicionDecoder()],
     ["precio", getU64Decoder()],
     ["envio", getU64Decoder()],
     ["total", getU64Decoder()],
@@ -182,5 +202,5 @@ export async function fetchAllMaybeOrden(
 }
 
 export function getOrdenSize(): number {
-  return 105;
+  return 108;
 }
