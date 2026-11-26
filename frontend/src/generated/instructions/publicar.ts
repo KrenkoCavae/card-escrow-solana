@@ -10,12 +10,16 @@ import {
   combineCodec,
   fixDecoderSize,
   fixEncoderSize,
+  getBooleanDecoder,
+  getBooleanEncoder,
   getBytesDecoder,
   getBytesEncoder,
   getStructDecoder,
   getStructEncoder,
   getU64Decoder,
   getU64Encoder,
+  getU8Decoder,
+  getU8Encoder,
   SOLANA_ERROR__PROGRAM_CLIENTS__INSUFFICIENT_ACCOUNT_METAS,
   SolanaError,
   transformEncoder,
@@ -42,6 +46,12 @@ import {
   type ResolvedInstructionAccountMeta,
 } from "@solana/program-client-core";
 import { CARD_ESCROW_PROGRAM_ADDRESS } from "../programs";
+import {
+  getCondicionDecoder,
+  getCondicionEncoder,
+  type Condicion,
+  type CondicionArgs,
+} from "../types";
 
 export const PUBLICAR_DISCRIMINATOR: ReadonlyUint8Array = new Uint8Array([
   47, 231, 106, 10, 167, 243, 58, 39,
@@ -79,12 +89,18 @@ export type PublicarInstruction<
 export type PublicarInstructionData = {
   discriminator: ReadonlyUint8Array;
   numero: bigint;
+  idCarta: number;
+  esFoil: boolean;
+  condicion: Condicion;
   precio: bigint;
   envio: bigint;
 };
 
 export type PublicarInstructionDataArgs = {
   numero: number | bigint;
+  idCarta: number;
+  esFoil: boolean;
+  condicion: CondicionArgs;
   precio: number | bigint;
   envio: number | bigint;
 };
@@ -94,6 +110,9 @@ export function getPublicarInstructionDataEncoder(): FixedSizeEncoder<PublicarIn
     getStructEncoder([
       ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
       ["numero", getU64Encoder()],
+      ["idCarta", getU8Encoder()],
+      ["esFoil", getBooleanEncoder()],
+      ["condicion", getCondicionEncoder()],
       ["precio", getU64Encoder()],
       ["envio", getU64Encoder()],
     ]),
@@ -105,6 +124,9 @@ export function getPublicarInstructionDataDecoder(): FixedSizeDecoder<PublicarIn
   return getStructDecoder([
     ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
     ["numero", getU64Decoder()],
+    ["idCarta", getU8Decoder()],
+    ["esFoil", getBooleanDecoder()],
+    ["condicion", getCondicionDecoder()],
     ["precio", getU64Decoder()],
     ["envio", getU64Decoder()],
   ]);
@@ -130,6 +152,9 @@ export type PublicarInput<
   orden: TAccountOrden;
   systemProgram?: TAccountSystemProgram;
   numero: PublicarInstructionDataArgs["numero"];
+  idCarta: PublicarInstructionDataArgs["idCarta"];
+  esFoil: PublicarInstructionDataArgs["esFoil"];
+  condicion: PublicarInstructionDataArgs["condicion"];
   precio: PublicarInstructionDataArgs["precio"];
   envio: PublicarInstructionDataArgs["envio"];
 };
