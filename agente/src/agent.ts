@@ -2,12 +2,16 @@ import 'dotenv/config';
 import OpenAI from 'openai';
 import { cardEscrowPlugin } from './plugins/card-escrow/index.js';
 
+const baseURL = process.env.LLM_BASE_URL || 'http://localhost:1234/v1';
+const model = process.env.LLM_MODEL || 'qwen2.5-7b-instruct';
+
+console.log('Usando LLM en:', baseURL);
+console.log('Modelo:', model);
+
 const openai = new OpenAI({
-  baseURL: process.env.LLM_BASE_URL || 'http://localhost:1234/v1',
+  baseURL,
   apiKey: process.env.LLM_API_KEY || 'sk-no-necesaria-local',
 });
-
-const model = process.env.LLM_MODEL || 'Qwen2.5-7B-Instruct';
 
 const tools = cardEscrowPlugin.actions.map(action => ({
   type: 'function' as const,
