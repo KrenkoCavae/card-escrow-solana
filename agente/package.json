@@ -1,0 +1,19 @@
+{
+  "name": "card-escrow-agente",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "prueba": "tsx src/prueba.ts",
+    "agente": "tsx src/agent.ts"
+  },
+  "dependencies": {
+    "@solana/kit": "^2.1.0",
+    "@solana/web3.js": "^1.98.0",
+    "openai": "^4.77.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
