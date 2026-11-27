@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { PublicKey } from '@solana/web3.js';
 import { createRoot } from 'react-dom/client';
-import { actionInstruction, condiciones, explorer, formatSol, getWallet, listarMisOrdenes, listarOfertas, program, publish, readOrder, send, states } from './chain';
+import { actionInstruction, condiciones, explorer, formatSol, getCashbackIxs, getWallet, listarMisOrdenes, listarOfertas, program, publish, readOrder, send, states, CASHBACK_PORCENTAJE } from './chain';
 import type { Action, Order } from './chain';
 import { obtenerCarta } from './cartas';
 import { Condicion } from './generated/types';
@@ -250,7 +250,7 @@ function Landing() {
         <h2>¿Cómo funciona?</h2>
         <ol style={{ paddingLeft: '1.2rem', lineHeight: 1.7 }}>
           <li>El vendedor publica la carta con condición, foil y precio.</li>
-          <li>El comprador paga. El dinero queda retenido en el escrow.</li>
+          <li>El comprador paga. El dinero queda retenido en el escrow y recibe {CASHBACK_PORCENTAJE}% de cashback en CartaCoin.</li>
           <li>El vendedor envía la carta física.</li>
           <li>El comprador confirma la recepción o solicita devolución.</li>
         </ol>
@@ -332,8 +332,9 @@ function DetalleOrden({
       if (!wallet || !actor) throw new Error('Conecta Solflare');
       const latest = await readOrder(ordenKey);
       setSignature('');
-      await send(wallet, actor, actionInstruction(action, ordenKey, latest, actor), setSignature);
-      setMessage('Operación confirmada');
+      const extra = action === 'pagar' ? getCashbackIxs(latest.total, actor) : [];
+      await send(wallet, actor, actionInstruction(action, ordenKey, latest, actor), setSignature, extra);
+      setMessage(action === 'pagar' ? 'Pago confirmado + cashback en CartaCoin' : 'Operación confirmada');
       await load();
     });
   }
@@ -350,6 +351,7 @@ function DetalleOrden({
             <dt>Precio</dt><dd>{formatSol(order.data.precio)}</dd>
             <dt>Envío</dt><dd>{formatSol(order.data.envio)}</dd>
             <dt>Total</dt><dd><strong>{formatSol(order.data.precio + order.data.envio)}</strong></dd>
+            <dt>Cashback</dt><dd>{CASHBACK_PORCENTAJE}% en CartaCoin</dd>
             <dt>Estado</dt><dd className="status">{states[order.data.estado]}</dd>
             <dt>Vendedor</dt><dd>{order.data.vendedor}</dd>
             {order.data.estado !== 0 && <><dt>Comprador</dt><dd>{order.data.comprador}</dd></>}
