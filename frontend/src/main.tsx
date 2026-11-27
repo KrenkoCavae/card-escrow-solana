@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { PublicKey } from '@solana/web3.js';
 import { createRoot } from 'react-dom/client';
-import { actionInstruction, condiciones, explorer, formatSol, getCashbackIxs, getWallet, listarMisOrdenes, listarOfertas, program, publish, readOrder, send, states, CASHBACK_PORCENTAJE } from './chain';
+import { actionInstruction, condiciones, explorer, formatSol, getCashbackIxs, getWallet, listarMisOrdenes, listarOfertas, program, publish, readOrder, send, states, CASHBACK_PORCENTAJE, CARTA_MINT } from './chain';
 import type { Action, Order } from './chain';
 import { obtenerCarta } from './cartas';
 import { Condicion } from './generated/types';
+import { getAta } from './cashback';
+import { TOKEN_2022_PROGRAM_ID, getAccount } from '@solana/spl-token';
 import './style.css';
 
 const actions: Record<Action, string> = {
@@ -119,6 +121,7 @@ function App() {
             <a href="#/catalogo">Catálogo</a>
             <a href="#/publicar">Publicar</a>
             <a href="#/mis-ordenes">Mis órdenes</a>
+            <a href="#/perfil">Mi Perfil</a>
             {actor ? (
               <>
                 <span style={{ fontSize: '0.85rem', color: '#475569' }}>{actor.slice(0, 4) + '…' + actor.slice(-4)}</span>
@@ -137,6 +140,7 @@ function App() {
         {esOrden && <DetalleOrden ordenKey={ordenKey} actor={actor} busy={busy} run={run} setSignature={setSignature} setMessage={setMessage} />}
         {ruta === '#/publicar' && <Publicar actor={actor} busy={busy} run={run} setSignature={setSignature} setMessage={setMessage} />}
         {ruta === '#/mis-ordenes' && <MisOrdenes actor={actor} busy={busy} run={run} setSignature={setSignature} setMessage={setMessage} />}
+        {ruta === '#/perfil' && <MiPerfil actor={actor} />}
 
         <p role="status">{busy ? 'Procesando…' : message}</p>
         {error && <p role="alert" className="error">{error}</p>}
@@ -513,6 +517,77 @@ function MisOrdenes({
         })}
       </div>
     </section>
+  );
+}
+
+function MiPerfil({ actor }: { actor: string }) {
+  const [ordenes, setOrdenes] = useState<{ key: string; data: Order; rol: 'vendedor' | 'comprador' }[]>([]);
+  const [cartaSaldo, setCartaSaldo] = useState<string>('0');
+
+  useEffect(() => {
+    if (!actor) return;
+    void (async () => {
+      const list = await listarMisOrdenes(actor);
+      setOrdenes(list);
+
+      try {
+        const ata = getAta(CARTA_MINT, new PublicKey(actor));
+        const acc = await getAccount(rpc, ata, undefined, TOKEN_2022_PROGRAM_ID);
+        const ui = Number(acc.amount) / 100;
+        setCartaSaldo(ui.toFixed(2));
+      } catch {
+        setCartaSaldo('0');
+      }
+    })();
+  }, [actor]);
+
+  if (!actor) return <section><p>Conecta tu wallet para ver tu perfil.</p></section>;
+
+  const compras = ordenes.filter(o => o.rol === 'comprador');
+  const ventas = ordenes.filter(o => o.rol === 'vendedor');
+
+  const comprasExitosas = compras.filter(o => o.data.estado === 2).length;
+  const comprasDevolucion = compras.filter(o => o.data.estado === 6).length;
+  const ventasExitosas = ventas.filter(o => o.data.estado === 2).length;
+  const ventasReembolso = ventas.filter(o => o.data.estado === 6).length;
+
+  const solGastado = compras.reduce((s, o) => s + o.data.total, 0n);
+  const solGanado = ventas.filter(o => o.data.estado === 2).reduce((s, o) => s + o.data.total, 0n);
+
+  const enTransito = compras.filter(o => o.data.estado === 3).length;
+  const pendientesEnvio = ventas.filter(o => o.data.estado === 1).length;
+  const enTransporte = ventas.filter(o => o.data.estado === 3).length;
+
+  const recientes = [...ordenes].sort((a, b) => Number(b.data.numero - a.data.numero)).slice(0, 5);
+
+  return (
+    <div>
+      <h2>Mi Perfil</h2>
+      <div className="grid-catalogo" style={{ marginBottom: '1.5rem' }}>
+        <div className="card-oferta"><h3>Compras</h3><p>{compras.length} · {comprasExitosas} exitosas</p></div>
+        <div className="card-oferta"><h3>Ventas</h3><p>{ventas.length} · {ventasExitosas} exitosas</p></div>
+        <div className="card-oferta"><h3>SOL gastado</h3><p>{formatSol(solGastado)}</p></div>
+        <div className="card-oferta"><h3>SOL ganado</h3><p>{formatSol(solGanado)}</p></div>
+        <div className="card-oferta"><h3>CartaCoin</h3><p>{cartaSaldo} CARTA</p><a href={explorer('address', CARTA_MINT.toBase58())} target="_blank" rel="noreferrer"><button className="secondary">Ver mint</button></a></div>
+        <div className="card-oferta"><h3>Logística</h3><p>En tránsito: {enTransito}<br/>Pend. envío: {pendientesEnvio}<br/>En transporte: {enTransporte}</p></div>
+        <div className="card-oferta"><h3>Devoluciones</h3><p>Compras: {comprasDevolucion}<br/>Ventas: {ventasReembolso}</p></div>
+      </div>
+
+      <section>
+        <h2>Actividad reciente</h2>
+        {recientes.length === 0 && <p>Sin actividad.</p>}
+        {recientes.map(({ key, data, rol }) => (
+          <div key={key} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.6rem 0', borderBottom: '1px solid #E2E8F0' }}>
+            <div>
+              <strong>{obtenerCarta(data.idCarta)?.nombre}</strong>
+              <TagsCarta esFoil={data.esFoil} condicion={data.condicion} />
+              <small>{rol === 'vendedor' ? 'Venta' : 'Compra'} · {states[data.estado]}</small>
+            </div>
+            <a href={`#/orden/${key}`}><button className="secondary">Ver</button></a>
+          </div>
+        ))}
+      </section>
+    </div>
   );
 }
 
