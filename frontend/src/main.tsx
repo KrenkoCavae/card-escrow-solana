@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { PublicKey } from '@solana/web3.js';
 import { createRoot } from 'react-dom/client';
-import { actionInstruction, condiciones, explorer, formatSol, getCashbackIxs, getWallet, listarMisOrdenes, listarOfertas, program, publish, readOrder, send, states, CASHBACK_PORCENTAJE, CARTA_MINT } from './chain';
+import { actionInstruction, condiciones, explorer, formatSol, getCashbackIxs, getWallet, listarMisOrdenes, listarOfertas, program, publish, readOrder, send, states, CASHBACK_PORCENTAJE, CARTA_MINT, rpc } from './chain';
 import type { Action, Order } from './chain';
 import { obtenerCarta } from './cartas';
 import { Condicion } from './generated/types';
