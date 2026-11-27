@@ -31,7 +31,8 @@ Navegación principal:
 - `#/catalogo` → Catálogo de ofertas activas
 - `#/publicar` → Publicar nueva oferta
 - `#/orden/<dirección>` → Detalle de una orden
-- `#/mis-ordenes` → Panel del usuario (en desarrollo)
+- `#/mis-ordenes` → Panel del usuario
+- `#/perfil` → Mi Perfil
 
 ## Aporte propio (v2) y cómo probarlo
 
@@ -80,3 +81,23 @@ Los rechazos se verifican con el mensaje del programa y una lectura posterior de
 - Las imágenes de las cartas viven en `frontend/public/cartas/` y no se almacenan on-chain.
 - El efecto foil es puramente visual (CSS) y se activa con el campo `es_foil`.
 - El catálogo lista solo órdenes en estado Pendiente.
+
+---
+
+## v2.1 – Cashback CartaCoin y mejoras de UI
+
+### Cambios principales
+- Integración de **CartaCoin** (Token-2022) como recompensa de cashback del 5 %.
+- Botón **Enviar cashback** visible solo para la wallet del permanent delegate.
+- Página **Mi Perfil** con resumen de compras, ventas, SOL, saldo de CartaCoin y logística.
+- Mejoras visuales: botones de logística (amarillo), devolución (rojo) y aceptar (verde) con íconos; tarjetas de perfil con colores e íconos.
+- Toast de confirmación al completar operaciones.
+
+### Documentación del token
+La documentación completa de CartaCoin (mint, autoridades, evidencia y cómo probar el cashback) está en:
+
+**[frontend/README.md](./frontend/README.md)**
+
+### Evidencia de cashback
+- Mint: [GL46rcJH…](https://explorer.solana.com/address/GL46rcJHo25NujJxEWg6A7NRwxYqXFGTGaNx8VcMhdNV?cluster=devnet)
+- Transacción de cashback: [WBUoWp5q…](https://explorer.solana.com/tx/WBUoWp5qcdnYXuJCWFqWC8c6iHDdxXn884fvDz9VmgPRtznKJZT9LS76picG9rtXH7frAwDh6n3kEBryTkQujKV?cluster=devnet)
