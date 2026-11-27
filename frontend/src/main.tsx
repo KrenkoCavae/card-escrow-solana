@@ -98,24 +98,26 @@ function App() {
   return (
     <div>
       <header>
-        <div>
-          <small>Solana Devnet</small>
-          <h1 style={{ cursor: 'pointer' }} onClick={() => navigate('#/')}>Card Escrow</h1>
+        <div className="inner">
+          <div>
+            <small style={{ color: '#475569' }}>Solana Devnet</small>
+            <h1 style={{ cursor: 'pointer' }} onClick={() => navigate('#/')}>Vault<span>Trade</span> Escrow</h1>
+          </div>
+          <nav>
+            <a href="#/">Home</a>
+            <a href="#/catalogo">Catálogo</a>
+            <a href="#/publicar">Publicar</a>
+            <a href="#/mis-ordenes">Mis órdenes</a>
+            {actor ? (
+              <>
+                <span style={{ fontSize: '0.85rem', color: '#475569' }}>{actor.slice(0, 4) + '…' + actor.slice(-4)}</span>
+                <button className="secondary" disabled={busy} onClick={() => void run(disconnectWallet)}>Desconectar</button>
+              </>
+            ) : (
+              <button disabled={busy} onClick={() => void run(connectWallet)}>Conectar wallet</button>
+            )}
+          </nav>
         </div>
-        <nav style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <a href="#/">Home</a>
-          <a href="#/catalogo">Catálogo</a>
-          <a href="#/publicar">Publicar</a>
-          <a href="#/mis-ordenes">Mis órdenes</a>
-          {actor ? (
-            <>
-              <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{actor.slice(0, 4) + '…' + actor.slice(-4)}</span>
-              <button disabled={busy} onClick={() => void run(disconnectWallet)}>Desconectar</button>
-            </>
-          ) : (
-            <button disabled={busy} onClick={() => void run(connectWallet)}>Conectar</button>
-          )}
-        </nav>
       </header>
 
       <main>
@@ -152,16 +154,16 @@ function Landing() {
 
   return (
     <div>
-      <section style={{ textAlign: 'center', padding: '2.5rem 1.5rem' }}>
-        <h2 style={{ fontSize: '2.2rem', marginBottom: '.6rem' }}>Compra y vende cartas con confianza</h2>
-        <p style={{ fontSize: '1.15rem', color: '#cbd5e1', maxWidth: '36rem', margin: '0 auto 1.5rem' }}>
+      <div className="hero">
+        <h2>Compra y vende cartas con confianza</h2>
+        <p>
           Escrow seguro en Solana. El pago queda bloqueado hasta que confirmes la recepción de tu carta.
         </p>
         <div className="actions" style={{ justifyContent: 'center' }}>
           <a href="#/catalogo"><button>Explorar catálogo</button></a>
-          <a href="#/publicar"><button>Publicar una carta</button></a>
+          <a href="#/publicar"><button className="secondary" style={{ background: 'rgba(255,255,255,.1)', color: 'white', borderColor: 'rgba(255,255,255,.2)' }}>Publicar una carta</button></a>
         </div>
-      </section>
+      </div>
 
       {destacada && (
         <section>
