@@ -18,12 +18,23 @@ const actions: Record<Action, string> = {
   reembolsar: 'Confirmar devolución y reembolsar',
 };
 
+const condTagClass = ['tag-m', 'tag-nm', 'tag-lp', 'tag-mp', 'tag-hp', 'tag-dmg'];
+
 function CartaVisual({ idCarta, esFoil }: { idCarta: number; esFoil: boolean }) {
   const carta = obtenerCarta(idCarta);
   if (!carta) return <div className="demo-card">?</div>;
   return (
     <div className={`carta ${esFoil ? 'foil' : ''}`}>
       <img src={carta.imagen} alt={carta.nombre} />
+    </div>
+  );
+}
+
+function TagsCarta({ esFoil, condicion }: { esFoil: boolean; condicion: number }) {
+  return (
+    <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginTop: '0.3rem' }}>
+      {esFoil && <span className="tag tag-foil">Foil</span>}
+      <span className={`tag ${condTagClass[condicion] ?? 'tag-m'}`}>{condiciones[condicion]?.split(' ')[0]}</span>
     </div>
   );
 }
@@ -137,52 +148,52 @@ function App() {
 }
 
 function Landing() {
-  const [destacada, setDestacada] = useState<{ key: string; data: Order } | null>(null);
+  const [ofertas, setOfertas] = useState<{ key: string; data: Order }[]>([]);
 
   useEffect(() => {
     void (async () => {
-      const ofertas = await listarOfertas();
-      const foilsMint = ofertas
-        .filter(o => o.data.esFoil && o.data.condicion === Condicion.Mint)
-        .sort((a, b) => {
-          if (a.data.precio !== b.data.precio) return Number(b.data.precio - a.data.precio);
-          return b.data.numero > a.data.numero ? 1 : -1;
-        });
-      setDestacada(foilsMint[0] ?? null);
+      const list = await listarOfertas();
+      setOfertas(list.slice(0, 3));
     })();
   }, []);
 
+  const cards = [0, 1, 2].map(i => ofertas[i] ?? null);
+
   return (
     <div>
-      <div className="hero">
-        <h2>Compra y vende cartas con confianza</h2>
-        <p>
-          Escrow seguro en Solana. El pago queda bloqueado hasta que confirmes la recepción de tu carta.
-        </p>
-        <div className="actions" style={{ justifyContent: 'center' }}>
-          <a href="#/catalogo"><button>Explorar catálogo</button></a>
-          <a href="#/publicar"><button className="secondary" style={{ background: 'rgba(255,255,255,.1)', color: 'white', borderColor: 'rgba(255,255,255,.2)' }}>Publicar una carta</button></a>
-        </div>
-      </div>
-
-      {destacada && (
-        <section>
-          <h2>Carta destacada</h2>
-          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <div style={{ maxWidth: 240 }}>
-              <CartaVisual idCarta={destacada.data.idCarta} esFoil={true} />
+      <div className="hero-wrap">
+        <div className="hero-content">
+          <div className="hero-text">
+            <div className="hero-badge">
+              <span className="dot" />
+              TEMPORADA DE INTERCAMBIOS ABIERTA
             </div>
-            <div>
-              <h3 style={{ marginTop: 0 }}>{obtenerCarta(destacada.data.idCarta)?.nombre}</h3>
-              <p>
-                <strong>Foil · Mint</strong><br />
-                Precio: <strong>{formatSol(destacada.data.precio)}</strong>
-              </p>
-              <a href={`#/orden/${destacada.key}`}><button>Ver oferta</button></a>
+            <h2>Renueva tu mazo con cartas verificadas y <span>trades justos</span>.</h2>
+            <p>
+              Conecta con coleccionistas, inspecciona el estado físico real y protege tus intercambios con escrow en Solana.
+            </p>
+            <div className="actions">
+              <a href="#/catalogo"><button style={{ background: '#F59E0B', color: '#0F172A' }}>Explorar catálogo</button></a>
+              <a href="#/publicar"><button className="secondary" style={{ background: 'rgba(255,255,255,.08)', color: 'white', borderColor: 'rgba(255,255,255,.2)' }}>Publicar mi carpeta</button></a>
             </div>
           </div>
-        </section>
-      )}
+
+          <div className="card-fan">
+            {cards.map((item, idx) => {
+              const pos = idx === 0 ? 'left' : idx === 1 ? 'center' : 'right';
+              if (!item) {
+                return <div key={idx} className={`fan-card ${pos} fan-placeholder`}>Sin ofertas</div>;
+              }
+              const carta = obtenerCarta(item.data.idCarta);
+              return (
+                <div key={item.key} className={`fan-card ${pos}`}>
+                  <CartaVisual idCarta={item.data.idCarta} esFoil={item.data.esFoil} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
 
       <section>
         <h2>Promociones del momento</h2>
@@ -238,8 +249,8 @@ function Catalogo({ busy, run }: { busy: boolean; run: (fn: () => Promise<void>)
             <div key={key} className="card-oferta">
               <CartaVisual idCarta={data.idCarta} esFoil={data.esFoil} />
               <h3>{carta?.nombre ?? 'Carta'}</h3>
-              <p>
-                {data.esFoil ? 'Foil · ' : ''}{condiciones[data.condicion]}<br />
+              <TagsCarta esFoil={data.esFoil} condicion={data.condicion} />
+              <p style={{ marginTop: '0.3rem' }}>
                 <strong>{formatSol(data.precio)}</strong>
               </p>
               <a href={`#/orden/${key}`}><button style={{ width: '100%' }}>Ver detalle</button></a>
@@ -301,9 +312,8 @@ function DetalleOrden({
         <CartaVisual idCarta={order.data.idCarta} esFoil={order.data.esFoil} />
         <div>
           <h3>{obtenerCarta(order.data.idCarta)?.nombre}</h3>
-          <dl>
-            <dt>Condición</dt><dd>{condiciones[order.data.condicion]}</dd>
-            <dt>Foil</dt><dd>{order.data.esFoil ? 'Sí' : 'No'}</dd>
+          <TagsCarta esFoil={order.data.esFoil} condicion={order.data.condicion} />
+          <dl style={{ marginTop: '0.8rem' }}>
             <dt>Precio</dt><dd>{formatSol(order.data.precio)}</dd>
             <dt>Envío</dt><dd>{formatSol(order.data.envio)}</dd>
             <dt>Total</dt><dd><strong>{formatSol(order.data.precio + order.data.envio)}</strong></dd>
@@ -451,9 +461,9 @@ function MisOrdenes({
             <div key={key} className="card-oferta">
               <CartaVisual idCarta={data.idCarta} esFoil={data.esFoil} />
               <h3>{carta?.nombre ?? 'Carta'}</h3>
+              <TagsCarta esFoil={data.esFoil} condicion={data.condicion} />
               <p>
                 <strong>{rol === 'vendedor' ? 'Venta' : 'Compra'}</strong><br />
-                {data.esFoil ? 'Foil · ' : ''}{condiciones[data.condicion]}<br />
                 {formatSol(data.precio)}<br />
                 <span className="status">{states[data.estado]}</span>
               </p>
