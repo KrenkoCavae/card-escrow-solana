@@ -2,7 +2,7 @@
 
 ## Qué es
 
-CartaCoin es un token SPL Token-2022 usado como recompensa (cashback) en el escrow. Se emite con las extensiones **MetadataPointer** y **PermanentDelegate**. El 5 % del total de una orden se puede entregar en CartaCoin al comprador.
+CartaCoin es un token SPL Token-2022 usado como cashback en el escrow. Se emite con las extensiones **MetadataPointer** y **PermanentDelegate**. El 5 % del total de una orden se puede entregar en CartaCoin al comprador.
 
 ## Direcciones
 
@@ -40,11 +40,20 @@ En la página **Mi Perfil** se muestra el saldo de CartaCoin de la wallet conect
 
 | Autoridad | Qué puede hacer |
 |-----------|------------------|
-| Mint authority | Crear el mint y mintear el suministro inicial |
+| Mint authority | Crear el mint y mintear el suministro inicial de CartaCoin |
 | Permanent Delegate | Transferir CartaCoin a cualquier wallet sin la firma del dueño de la ATA |
 | Comprador | Recibir el cashback; no puede mintear ni transferir desde la reserva |
 
 La red valida que el permanent delegate firme la transferencia. La aplicación solo muestra el botón cuando la wallet conectada es el permanent delegate.
+
+## Limitantes
+
+Dado que el demo contempla que hay múltiples vendedores y compradores, se determinó que la wallet `48c76...` es la única que puede brindar el cashback dada la complejidad técnica en torno a ventas descentralizadas. Por la misma situación, el otorgamiento de cashback se hace en dos partes:
+
+- Primera: La wallet compradora liquida y valida por completa la orden.
+- Segunda: La wallet `48c76...`, para las ordenes completadas, otorga cashback/token al presionar un botón que solo aparece en las ordenes si la wallet conectada es `48c76...` y si su estatus está como completado.
+
+Esto se realizó de este modo ya que ambas wallets, compradora y vendedora (`48c76...`) tendrían que firmar al mismo tiempo.
 
 ## Archivos relevantes
 
