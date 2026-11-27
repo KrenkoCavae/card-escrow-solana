@@ -58,6 +58,7 @@ function App() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [signature, setSignature] = useState('');
+  const [toast, setToast] = useState<{ text: string; type: 'success' | 'info' } | null>(null);
 
   useEffect(() => {
     const wallet = getWallet();
@@ -73,6 +74,12 @@ function App() {
       wallet?.off?.('disconnect', disconnect);
     };
   }, []);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 4500);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   async function run(task: () => Promise<void>) {
     setError('');
@@ -137,16 +144,21 @@ function App() {
       <main>
         {ruta === '#/' && <Landing />}
         {ruta === '#/catalogo' && <Catalogo busy={busy} run={run} />}
-        {esOrden && <DetalleOrden ordenKey={ordenKey} actor={actor} busy={busy} run={run} setSignature={setSignature} setMessage={setMessage} />}
+        {esOrden && <DetalleOrden ordenKey={ordenKey} actor={actor} busy={busy} run={run} setSignature={setSignature} setToast={setToast} />}
         {ruta === '#/publicar' && <Publicar actor={actor} busy={busy} run={run} setSignature={setSignature} setMessage={setMessage} />}
         {ruta === '#/mis-ordenes' && <MisOrdenes actor={actor} busy={busy} run={run} setSignature={setSignature} setMessage={setMessage} />}
         {ruta === '#/perfil' && <MiPerfil actor={actor} />}
 
-        <p role="status">{busy ? 'Procesando…' : message}</p>
         {error && <p role="alert" className="error">{error}</p>}
         {signature && <p><a href={explorer('tx', signature)} target="_blank" rel="noreferrer">Ver transacción</a></p>}
         <small><a href={explorer('address', program.toBase58())} target="_blank" rel="noreferrer">Programa en Devnet</a></small>
       </main>
+
+      {toast && (
+        <div className={`toast ${toast.type}`}>
+          {toast.type === 'success' ? '✓' : 'ℹ'} {toast.text}
+        </div>
+      )}
     </div>
   );
 }
@@ -300,14 +312,14 @@ function Catalogo({ busy, run }: { busy: boolean; run: (fn: () => Promise<void>)
 }
 
 function DetalleOrden({
-  ordenKey, actor, busy, run, setSignature, setMessage
+  ordenKey, actor, busy, run, setSignature, setToast
 }: {
   ordenKey: string;
   actor: string;
   busy: boolean;
   run: (fn: () => Promise<void>) => void;
   setSignature: (s: string) => void;
-  setMessage: (m: string) => void;
+  setToast: (t: { text: string; type: 'success' | 'info' } | null) => void;
 }) {
   const [order, setOrder] = useState<{ key: string; data: Order } | null>(null);
 
@@ -338,7 +350,11 @@ function DetalleOrden({
       setSignature('');
       const extra = action === 'pagar' ? getCashbackIxs(latest.total, actor) : [];
       await send(wallet, actor, actionInstruction(action, ordenKey, latest, actor), setSignature, extra);
-      setMessage(action === 'pagar' ? 'Pago confirmado + cashback en CartaCoin' : 'Operación confirmada');
+      if (action === 'pagar') {
+        setToast({ text: 'Pago confirmado + cashback en CartaCoin', type: 'success' });
+      } else {
+        setToast({ text: 'Operación confirmada', type: 'success' });
+      }
       await load();
     });
   }
@@ -346,9 +362,11 @@ function DetalleOrden({
   return (
     <section>
       <h2>Detalle de la orden</h2>
-      <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-        <CartaVisual idCarta={order.data.idCarta} esFoil={order.data.esFoil} />
-        <div>
+      <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        <div style={{ width: 220, flexShrink: 0 }}>
+          <CartaVisual idCarta={order.data.idCarta} esFoil={order.data.esFoil} />
+        </div>
+        <div style={{ flex: 1, minWidth: 220 }}>
           <h3>{obtenerCarta(order.data.idCarta)?.nombre}</h3>
           <TagsCarta esFoil={order.data.esFoil} condicion={order.data.condicion} />
           <dl style={{ marginTop: '0.8rem' }}>
