@@ -5,11 +5,11 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { PublicKey } from '@solana/web3.js';
 import { createRoot } from 'react-dom/client';
-import { actionInstruction, condiciones, explorer, formatSol, getCashbackIxs, getWallet, listarMisOrdenes, listarOfertas, program, publish, readOrder, send, states, CASHBACK_PORCENTAJE, CARTA_MINT, rpc } from './chain';
+import { actionInstruction, condiciones, explorer, formatSol, getCashbackIxs, getWallet, listarMisOrdenes, listarOfertas, program, publish, readOrder, send, states, CASHBACK_PORCENTAJE, CARTA_MINT, CARTA_DELEGATE, rpc } from './chain';
 import type { Action, Order } from './chain';
 import { obtenerCarta } from './cartas';
 import { Condicion } from './generated/types';
-import { getAta } from './cashback';
+import { getAta, buildCashbackInstructions, calcularCashback } from './cashback';
 import { TOKEN_2022_PROGRAM_ID, getAccount } from '@solana/spl-token';
 import './style.css';
 
@@ -345,6 +345,8 @@ function DetalleOrden({
     if (estado === 5 && actor === vendedor) available.push('reembolsar');
   }
 
+  const puedeEnviarCashback = actor === CARTA_DELEGATE.toBase58() && order.data.comprador && order.data.comprador !== CARTA_DELEGATE.toBase58();
+
   function perform(action: Action) {
     void run(async () => {
       const wallet = getWallet();
@@ -359,6 +361,29 @@ function DetalleOrden({
         setToast({ text: 'Operación confirmada', type: 'success' });
       }
       await load();
+    });
+  }
+
+  function enviarCashback() {
+    void run(async () => {
+      if (!order?.data.comprador) return;
+      const wallet = getWallet();
+      if (!wallet || actor !== CARTA_DELEGATE.toBase58()) throw new Error('Conecta la wallet del permanent delegate');
+      const amount = calcularCashback(order.data.total, CASHBACK_PORCENTAJE);
+      if (amount === 0n) throw new Error('El cashback es 0');
+      const ixs = buildCashbackInstructions(
+        CARTA_MINT,
+        CARTA_DELEGATE,
+        new PublicKey(order.data.comprador),
+        amount,
+        CARTA_DELEGATE,
+      );
+      const tip = await rpc.getLatestBlockhash();
+      const tx = new Transaction({ feePayer: CARTA_DELEGATE, ...tip }).add(...ixs);
+      const signed = await wallet.signTransaction(tx);
+      const sig = await rpc.sendRawTransaction(signed.serialize());
+      setSignature(sig);
+      setToast({ text: 'Cashback enviado en CartaCoin', type: 'success' });
     });
   }
 
@@ -385,6 +410,9 @@ function DetalleOrden({
             {available.map(a => (
               <button key={a} disabled={busy} onClick={() => perform(a)}>{actions[a]}</button>
             ))}
+            {puedeEnviarCashback && (
+              <button disabled={busy} onClick={enviarCashback}>Enviar cashback</button>
+            )}
           </div>
         </div>
       </div>
