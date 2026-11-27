@@ -3,7 +3,7 @@ globalThis.Buffer = Buffer;
 
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { PublicKey } from '@solana/web3.js';
+import { PublicKey, Transaction } from '@solana/web3.js';
 import { createRoot } from 'react-dom/client';
 import { actionInstruction, condiciones, explorer, formatSol, getCashbackIxs, getWallet, listarMisOrdenes, listarOfertas, program, publish, readOrder, send, states, CASHBACK_PORCENTAJE, CARTA_MINT, CARTA_DELEGATE, rpc } from './chain';
 import type { Action, Order } from './chain';
