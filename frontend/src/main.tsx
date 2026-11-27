@@ -149,6 +149,7 @@ function App() {
 
 function Landing() {
   const [ofertas, setOfertas] = useState<{ key: string; data: Order }[]>([]);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     void (async () => {
@@ -184,7 +185,6 @@ function Landing() {
               if (!item) {
                 return <div key={idx} className={`fan-card ${pos} fan-placeholder`}>Sin ofertas</div>;
               }
-              const carta = obtenerCarta(item.data.idCarta);
               return (
                 <div key={item.key} className={`fan-card ${pos}`}>
                   <CartaVisual idCarta={item.data.idCarta} esFoil={item.data.esFoil} />
@@ -195,23 +195,56 @@ function Landing() {
         </div>
       </div>
 
-      <section>
-        <h2>Promociones del momento</h2>
-        <div className="grid-catalogo">
-          <div className="card-oferta">
-            <h3>Envío gratis en tu primera compra</h3>
-            <p>Usa el código <strong>DEVNETFREE</strong> al publicar (demo).</p>
+      <div className="promo-grid">
+        <div className="promo-card">
+          <div className="promo-icon" style={{ background: '#EFF6FF', color: '#2563EB' }}>
+            <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
           </div>
-          <div className="card-oferta">
-            <h3>Vendedores verificados</h3>
-            <p>Todas las transacciones quedan registradas en Solana Explorer.</p>
-          </div>
-          <div className="card-oferta">
-            <h3>Protección total</h3>
-            <p>Si hay problema, puedes solicitar devolución antes de liberar el pago.</p>
+          <div>
+            <div className="promo-label">Beneficio Trade</div>
+            <h3>0% Comisión en Intercambios</h3>
+            <p>Cambia cartas de igual valor con otros usuarios sin tarifas de plataforma.</p>
           </div>
         </div>
-      </section>
+
+        <div className="promo-card">
+          <div className="promo-icon" style={{ background: '#FEF3C7', color: '#D97706' }}>
+            <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>
+          </div>
+          <div>
+            <div className="promo-label" style={{ color: '#D97706' }}>Cupón: JUEGO10</div>
+            <h3>10% OFF en Estados LP y MP</h3>
+            <p>Ahorra armando mazos competitivos con cartas de desgaste ligero.</p>
+          </div>
+        </div>
+
+        <div className="promo-card" onClick={() => setShowModal(true)} style={{ cursor: 'pointer' }}>
+          <div className="promo-icon" style={{ background: '#ECFDF5', color: '#16A34A' }}>
+            <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <div>
+            <div className="promo-label" style={{ color: '#16A34A' }}>Compra Segura</div>
+            <h3>Envío Consolidado y Verificado</h3>
+            <p>Revisamos autenticidad y estado físico antes de liberar el pago.</p>
+          </div>
+        </div>
+      </div>
+
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h3>Proceso de verificación</h3>
+            <ol>
+              <li>El vendedor publica la carta con condición y fotos.</li>
+              <li>El comprador paga. El SOL queda retenido en el escrow.</li>
+              <li>El vendedor envía la carta física.</li>
+              <li>El comprador confirma recepción o solicita devolución.</li>
+              <li>Al aceptar, el pago se libera al vendedor.</li>
+            </ol>
+            <button onClick={() => setShowModal(false)}>Entendido</button>
+          </div>
+        </div>
+      )}
 
       <section>
         <h2>¿Cómo funciona?</h2>
