@@ -1,3 +1,6 @@
+import { Buffer } from 'buffer';
+globalThis.Buffer = Buffer;
+
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { PublicKey } from '@solana/web3.js';
