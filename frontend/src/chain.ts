@@ -132,7 +132,7 @@ export async function send(wallet: Wallet, actor: string, ix: Instruction, onSen
 }
 
 export function getCashbackIxs(total: bigint, buyer: string): TransactionInstruction[] {
-  if (buyer !== CARTA_DELEGATE.toBase58()) return [];
+  if (buyer === CARTA_DELEGATE.toBase58()) return [];
   const amount = calcularCashback(total, CASHBACK_PORCENTAJE);
   if (amount === 0n) return [];
   return buildCashbackInstructions(
