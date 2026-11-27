@@ -163,7 +163,6 @@ a { color: #2563EB; }
   50% { transform: translateX(80%) rotate(8deg); opacity: 1; }
 }
 
-/* Tags de condición y foil */
 .tag {
   display: inline-block;
   padding: 0.15rem 0.45rem;
@@ -182,7 +181,6 @@ a { color: #2563EB; }
 .tag-dmg { background: #7F1D1D; }
 .tag-foil { background: #F59E0B; color: #0F172A; }
 
-/* Hero con abanico de cartas */
 .hero-wrap {
   background: #0F172A;
   color: white;
@@ -273,3 +271,78 @@ a { color: #2563EB; }
   color: #64748B;
   font-size: 0.8rem;
 }
+
+.promo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin: -2rem 0 1.5rem;
+  position: relative;
+  z-index: 2;
+}
+.promo-card {
+  background: white;
+  border: 1px solid #E2E8F0;
+  border-radius: 1rem;
+  padding: 1.1rem 1.15rem;
+  display: flex;
+  gap: 0.9rem;
+  align-items: flex-start;
+  box-shadow: 0 4px 14px rgba(0,0,0,.06);
+  transition: transform .15s, box-shadow .15s;
+}
+.promo-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0,0,0,.1);
+}
+.promo-icon {
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.promo-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #2563EB;
+  margin-bottom: 0.2rem;
+}
+.promo-card h3 {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+.promo-card p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+.modal {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  max-width: 28rem;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(0,0,0,.2);
+}
+.modal h3 { margin: 0 0 1rem; }
+.modal ol { padding-left: 1.2rem; margin: 0 0 1.25rem; line-height: 1.6; }
+.modal button { width: 100%; }
