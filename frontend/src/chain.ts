@@ -9,8 +9,13 @@ import {
   getSolicitarDevolucionInstruction, getConfirmarDevolucionInstruction,
 } from './generated';
 import { Condicion } from './generated/types';
+import { buildCashbackInstructions, calcularCashback } from './cashback';
 
 export const program = new PublicKey(CARD_ESCROW_PROGRAM_ADDRESS);
+export const CARTA_MINT = new PublicKey('GL46rcJHo25NujJxEWg6A7NRwxYqXFGTGaNx8VcMhdNV');
+export const CARTA_DELEGATE = new PublicKey('48c76qcJyjDu9K2cXg37EViQNzAQRLkTd9Zhhwv4TetQ');
+export const CASHBACK_PORCENTAJE = 5;
+
 export const rpc = new Connection(import.meta.env.VITE_DEVNET_RPC_URL || clusterApiUrl('devnet'), 'confirmed');
 export const states = ['Pendiente de pago', 'Pagada', 'Completada', 'Enviada', 'Recibida', 'Devolución solicitada', 'Reembolsada'];
 export const condiciones = ['Mint (M)', 'Near Mint (NM)', 'Lightly Played (LP)', 'Moderately Played (MP)', 'Heavily Played (HP)', 'Damaged (DMG)'];
@@ -101,16 +106,19 @@ export function actionInstruction(action: Action, key: string, order: Order, act
   }
 }
 
-export async function send(wallet: Wallet, actor: string, ix: Instruction, onSent: (signature: string) => void) {
+export async function send(wallet: Wallet, actor: string, ix: Instruction, onSent: (signature: string) => void, extraIxs: TransactionInstruction[] = []) {
   if (wallet.publicKey?.toBase58() !== actor) throw new Error('La cuenta de Solflare cambió. Vuelve a conectarla.');
   const tip = await rpc.getLatestBlockhash();
-  const tx = new Transaction({ feePayer: new PublicKey(actor), ...tip }).add(new TransactionInstruction({
-    programId: new PublicKey(ix.programAddress),
-    keys: (ix.accounts ?? []).map(({ address, role }) => ({
-      pubkey: new PublicKey(address), isWritable: (role & 1) === 1, isSigner: role >= 2,
-    })),
-    data: Buffer.from(ix.data ?? []),
-  }));
+  const tx = new Transaction({ feePayer: new PublicKey(actor), ...tip }).add(
+    new TransactionInstruction({
+      programId: new PublicKey(ix.programAddress),
+      keys: (ix.accounts ?? []).map(({ address, role }) => ({
+        pubkey: new PublicKey(address), isWritable: (role & 1) === 1, isSigner: role >= 2,
+      })),
+      data: Buffer.from(ix.data ?? []),
+    }),
+    ...extraIxs,
+  );
   const signed = await wallet.signTransaction(tx);
   const signature = await rpc.sendRawTransaction(signed.serialize(), { preflightCommitment: 'confirmed' });
   onSent(signature);
@@ -123,12 +131,21 @@ export async function send(wallet: Wallet, actor: string, ix: Instruction, onSen
   throw new Error('Confirmación pendiente. Revisa la firma en Explorer antes de volver a enviar.');
 }
 
-/** Lista las órdenes en estado Pendiente (ofertas activas). */
+export function getCashbackIxs(total: bigint, buyer: string): TransactionInstruction[] {
+  const amount = calcularCashback(total, CASHBACK_PORCENTAJE);
+  if (amount === 0n) return [];
+  return buildCashbackInstructions(
+    CARTA_MINT,
+    new PublicKey(buyer),
+    new PublicKey(buyer),
+    amount,
+    CARTA_DELEGATE,
+  );
+}
+
 export async function listarOfertas(): Promise<{ key: string; data: Order }[]> {
   const accounts = await rpc.getProgramAccounts(program, {
-    filters: [
-      { dataSize: 8 + 100 },
-    ],
+    filters: [{ dataSize: 8 + 100 }],
   });
 
   const decoder = getOrdenDecoder();
@@ -149,7 +166,6 @@ export async function listarOfertas(): Promise<{ key: string; data: Order }[]> {
   return ofertas;
 }
 
-/** Lista las órdenes donde la wallet es vendedor o comprador. */
 export async function listarMisOrdenes(wallet: string): Promise<{ key: string; data: Order; rol: 'vendedor' | 'comprador' }[]> {
   const accounts = await rpc.getProgramAccounts(program, {
     filters: [{ dataSize: 8 + 100 }],
