@@ -23,6 +23,22 @@ const actions: Record<Action, string> = {
   reembolsar: 'Confirmar devolución y reembolsar',
 };
 
+const buttonClass: Partial<Record<Action, string>> = {
+  enviar: 'logistica',
+  recibir: 'logistica',
+  devolver: 'devolucion',
+  reembolsar: 'devolucion',
+  aceptar: 'aceptar',
+};
+
+const buttonIcon: Partial<Record<Action, string>> = {
+  enviar: '🚚',
+  recibir: '📦',
+  devolver: '↩️',
+  reembolsar: '↩️',
+  aceptar: '✓',
+};
+
 const condTagClass = ['tag-m', 'tag-nm', 'tag-lp', 'tag-mp', 'tag-hp', 'tag-dmg'];
 
 function CartaVisual({ idCarta, esFoil }: { idCarta: number; esFoil: boolean }) {
@@ -408,7 +424,10 @@ function DetalleOrden({
           </dl>
           <div className="actions">
             {available.map(a => (
-              <button key={a} disabled={busy} onClick={() => perform(a)}>{actions[a]}</button>
+              <button key={a} className={buttonClass[a]} disabled={busy} onClick={() => perform(a)}>
+                {buttonIcon[a] && <span>{buttonIcon[a]}</span>}
+                {actions[a]}
+              </button>
             ))}
             {puedeEnviarCashback && (
               <button disabled={busy} onClick={enviarCashback}>Enviar cashback</button>
@@ -557,7 +576,10 @@ function MisOrdenes({
               </p>
               <div className="actions" style={{ marginTop: '0.5rem' }}>
                 {disponibles.map(a => (
-                  <button key={a} disabled={busy} onClick={() => perform(key, a)}>{actions[a]}</button>
+                  <button key={a} className={buttonClass[a]} disabled={busy} onClick={() => perform(key, a)}>
+                    {buttonIcon[a] && <span>{buttonIcon[a]}</span>}
+                    {actions[a]}
+                  </button>
                 ))}
                 <a href={`#/orden/${key}`}><button>Ver detalle</button></a>
               </div>
@@ -613,13 +635,38 @@ function MiPerfil({ actor }: { actor: string }) {
     <div>
       <h2>Mi Perfil</h2>
       <div className="grid-catalogo" style={{ marginBottom: '1.5rem' }}>
-        <div className="card-oferta"><h3>Compras</h3><p>{compras.length} · {comprasExitosas} exitosas</p></div>
-        <div className="card-oferta"><h3>Ventas</h3><p>{ventas.length} · {ventasExitosas} exitosas</p></div>
-        <div className="card-oferta"><h3>SOL gastado</h3><p>{formatSol(solGastado)}</p></div>
-        <div className="card-oferta"><h3>SOL ganado</h3><p>{formatSol(solGanado)}</p></div>
-        <div className="card-oferta"><h3>CartaCoin</h3><p>{cartaSaldo} CARTA</p><a href={explorer('address', CARTA_MINT.toBase58())} target="_blank" rel="noreferrer"><button className="secondary">Ver mint</button></a></div>
-        <div className="card-oferta"><h3>Logística</h3><p>En tránsito: {enTransito}<br/>Pend. envío: {pendientesEnvio}<br/>En transporte: {enTransporte}</p></div>
-        <div className="card-oferta"><h3>Devoluciones</h3><p>Compras: {comprasDevolucion}<br/>Ventas: {ventasReembolso}</p></div>
+        <div className="perfil-card">
+          <div className="perfil-icon" style={{ background: '#EFF6FF', color: '#2563EB' }}>🛒</div>
+          <div><h3>Compras</h3><p>{compras.length} · {comprasExitosas} exitosas</p></div>
+        </div>
+        <div className="perfil-card">
+          <div className="perfil-icon" style={{ background: '#ECFDF5', color: '#16A34A' }}>💰</div>
+          <div><h3>Ventas</h3><p>{ventas.length} · {ventasExitosas} exitosas</p></div>
+        </div>
+        <div className="perfil-card">
+          <div className="perfil-icon" style={{ background: '#FEF3C7', color: '#D97706' }}>↓</div>
+          <div><h3>SOL gastado</h3><p>{formatSol(solGastado)}</p></div>
+        </div>
+        <div className="perfil-card">
+          <div className="perfil-icon" style={{ background: '#DCFCE7', color: '#16A34A' }}>↑</div>
+          <div><h3>SOL ganado</h3><p>{formatSol(solGanado)}</p></div>
+        </div>
+        <div className="perfil-card">
+          <div className="perfil-icon" style={{ background: '#F5F3FF', color: '#7C3AED' }}>✨</div>
+          <div>
+            <h3>CartaCoin</h3>
+            <p>{cartaSaldo} CARTA</p>
+            <a href={explorer('address', CARTA_MINT.toBase58())} target="_blank" rel="noreferrer"><button className="secondary" style={{ marginTop: '0.4rem' }}>Ver mint</button></a>
+          </div>
+        </div>
+        <div className="perfil-card">
+          <div className="perfil-icon" style={{ background: '#FEF3C7', color: '#D97706' }}>🚚</div>
+          <div><h3>Logística</h3><p>En tránsito: {enTransito}<br/>Pend. envío: {pendientesEnvio}<br/>En transporte: {enTransporte}</p></div>
+        </div>
+        <div className="perfil-card">
+          <div className="perfil-icon" style={{ background: '#FEE2E2', color: '#DC2626' }}>↩️</div>
+          <div><h3>Devoluciones</h3><p>Compras: {comprasDevolucion}<br/>Ventas: {ventasReembolso}</p></div>
+        </div>
       </div>
 
       <section>
