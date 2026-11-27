@@ -346,3 +346,24 @@ a { color: #2563EB; }
 .modal h3 { margin: 0 0 1rem; }
 .modal ol { padding-left: 1.2rem; margin: 0 0 1.25rem; line-height: 1.6; }
 .modal button { width: 100%; }
+
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 200;
+  background: #0F172A;
+  color: white;
+  padding: 0.85rem 1.15rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  animation: toast-in .25s ease-out;
+}
+.toast.success { border-left: 4px solid #16A34A; }
+.toast.info { border-left: 4px solid #2563EB; }
+@keyframes toast-in {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
