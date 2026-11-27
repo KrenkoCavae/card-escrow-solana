@@ -148,7 +148,6 @@ a { color: #2563EB; }
   border-radius: 0.75rem;
 }
 
-/* Foil más sutil estilo VaultTrade */
 .carta.foil::after {
   content: "";
   position: absolute;
@@ -164,13 +163,113 @@ a { color: #2563EB; }
   50% { transform: translateX(80%) rotate(8deg); opacity: 1; }
 }
 
-.hero {
+/* Tags de condición y foil */
+.tag {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.tag-m { background: #16A34A; }
+.tag-nm { background: #0284C7; }
+.tag-lp { background: #0EA5E9; }
+.tag-mp { background: #D97706; }
+.tag-hp { background: #DC2626; }
+.tag-dmg { background: #7F1D1D; }
+.tag-foil { background: #F59E0B; color: #0F172A; }
+
+/* Hero con abanico de cartas */
+.hero-wrap {
   background: #0F172A;
   color: white;
   border-radius: 1rem;
-  padding: 2.5rem 1.5rem;
-  text-align: center;
+  padding: 2.5rem 1.5rem 3rem;
   margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
 }
-.hero h2 { color: white; font-size: 2rem; }
-.hero p { color: #CBD5E1; max-width: 36rem; margin: 0.5rem auto 1.25rem; }
+.hero-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(#2563EB 1px, transparent 1px);
+  background-size: 22px 22px;
+  opacity: 0.12;
+  pointer-events: none;
+}
+.hero-content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2rem;
+  align-items: center;
+}
+@media (max-width: 900px) {
+  .hero-content { grid-template-columns: 1fr; text-align: center; }
+}
+.hero-text h2 {
+  color: white;
+  font-size: 2.1rem;
+  line-height: 1.15;
+  margin: 0.4rem 0 0.6rem;
+}
+.hero-text h2 span { color: #F59E0B; }
+.hero-text p { color: #CBD5E1; max-width: 36rem; margin: 0 0 1.25rem; }
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(37,99,235,.2);
+  border: 1px solid rgba(37,99,235,.4);
+  color: #BFDBFE;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+}
+.hero-badge .dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: #F59E0B;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.card-fan {
+  position: relative;
+  width: 280px;
+  height: 220px;
+  margin: 0 auto;
+}
+.fan-card {
+  position: absolute;
+  width: 140px;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0,0,0,.4);
+  transition: transform .25s;
+}
+.fan-card:hover { transform: translateY(-8px) scale(1.04); }
+.fan-card.left { left: 0; top: 20px; transform: rotate(-12deg); }
+.fan-card.center { left: 70px; top: 0; z-index: 2; transform: rotate(0deg); }
+.fan-card.right { right: 0; top: 20px; transform: rotate(12deg); }
+.fan-card img { width: 100%; display: block; }
+.fan-placeholder {
+  background: #1E293B;
+  border: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 190px;
+  color: #64748B;
+  font-size: 0.8rem;
+}
