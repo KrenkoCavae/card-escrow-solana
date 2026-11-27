@@ -18,7 +18,6 @@ import {
   getMintLen,
   ExtensionType,
 } from '@solana/spl-token';
-import { createInitializeInstruction, pack, TokenMetadata } from '@solana/spl-token-metadata';
 
 export const CARTA_DECIMALS = 2;
 export const CARTA_SYMBOL = 'CARTA';
@@ -35,27 +34,18 @@ export async function crearCartaCoin(
   initialSupply: bigint,
 ): Promise<PublicKey> {
   const mint = Keypair.generate();
-  const metadata: TokenMetadata = {
-    mint: mint.publicKey,
-    name: CARTA_NAME,
-    symbol: CARTA_SYMBOL,
-    uri: '',
-    additionalMetadata: [],
-  };
 
-  const metadataData = pack(metadata);
   const mintLen = getMintLen([
     ExtensionType.MetadataPointer,
     ExtensionType.PermanentDelegate,
   ]);
-  const space = mintLen + metadataData.length;
-  const lamports = await connection.getMinimumBalanceForRentExemption(space);
+  const lamports = await connection.getMinimumBalanceForRentExemption(mintLen);
 
   const tx = new Transaction().add(
     SystemProgram.createAccount({
       fromPubkey: payer.publicKey,
       newAccountPubkey: mint.publicKey,
-      space,
+      space: mintLen,
       lamports,
       programId: TOKEN_2022_PROGRAM_ID,
     }),
@@ -77,16 +67,6 @@ export async function crearCartaCoin(
       null,
       TOKEN_2022_PROGRAM_ID,
     ),
-    createInitializeInstruction({
-      programId: TOKEN_2022_PROGRAM_ID,
-      mint: mint.publicKey,
-      metadata: mint.publicKey,
-      name: metadata.name,
-      symbol: metadata.symbol,
-      uri: metadata.uri,
-      mintAuthority: payer.publicKey,
-      updateAuthority: payer.publicKey,
-    }),
   );
 
   await sendAndConfirmTransaction(connection, tx, [payer, mint]);
