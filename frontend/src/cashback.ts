@@ -17,8 +17,6 @@ import {
   createTransferInstruction,
   getMintLen,
   ExtensionType,
-  TYPE_SIZE,
-  LENGTH_SIZE,
 } from '@solana/spl-token';
 import { createInitializeInstruction, pack, TokenMetadata } from '@solana/spl-token-metadata';
 
@@ -45,19 +43,19 @@ export async function crearCartaCoin(
     additionalMetadata: [],
   };
 
-  const metadataLen = pack(metadata).length;
+  const metadataData = pack(metadata);
   const mintLen = getMintLen([
     ExtensionType.MetadataPointer,
-    ExtensionType.TokenMetadata,
     ExtensionType.PermanentDelegate,
   ]);
-  const lamports = await connection.getMinimumBalanceForRentExemption(mintLen + metadataLen);
+  const space = mintLen + metadataData.length;
+  const lamports = await connection.getMinimumBalanceForRentExemption(space);
 
   const tx = new Transaction().add(
     SystemProgram.createAccount({
       fromPubkey: payer.publicKey,
       newAccountPubkey: mint.publicKey,
-      space: mintLen,
+      space,
       lamports,
       programId: TOKEN_2022_PROGRAM_ID,
     }),
