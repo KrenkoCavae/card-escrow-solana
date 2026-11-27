@@ -80,6 +80,9 @@ button {
   width: auto;
   border: none;
   box-shadow: 0 1px 2px rgba(0,0,0,.08);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 button:hover:not(:disabled) { background: #1D4ED8; }
 button:disabled { opacity: .55; cursor: default; }
@@ -89,6 +92,12 @@ button.secondary {
   border: 1px solid #E2E8F0;
 }
 button.secondary:hover:not(:disabled) { border-color: #2563EB; color: #2563EB; }
+button.logistica { background: #F59E0B; color: #0F172A; }
+button.logistica:hover:not(:disabled) { background: #D97706; }
+button.devolucion { background: #DC2626; }
+button.devolucion:hover:not(:disabled) { background: #B91C1C; }
+button.aceptar { background: #16A34A; }
+button.aceptar:hover:not(:disabled) { background: #15803D; }
 
 .amounts {
   display: grid;
@@ -134,6 +143,27 @@ a { color: #2563EB; }
 }
 .card-oferta h3 { margin: 0.4rem 0 0.15rem; font-size: 1.05rem; color: #0F172A; font-weight: 700; }
 .card-oferta p { margin: 0; font-size: 0.875rem; color: #475569; }
+
+.perfil-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 1rem;
+  padding: 1rem;
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+}
+.perfil-icon {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.perfil-card h3 { margin: 0 0 0.2rem; font-size: 0.95rem; }
+.perfil-card p { margin: 0; font-size: 0.85rem; color: #475569; }
 
 .carta {
   position: relative;
